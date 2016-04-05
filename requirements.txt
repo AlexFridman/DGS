@@ -1,3 +1,5 @@
+pyext
+sklearn
 mongoengine
 flask
 flask
