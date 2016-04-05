@@ -1,7 +1,5 @@
 from celery import Celery
 
-import src.gsserver.db.gstask
-
 app = Celery()
 
 app.conf.update(
@@ -22,5 +20,6 @@ def init_celery_app(conf):
 
 @app.task
 def run_subtask(id):
-    subtask = src.gsserver.db.gstask.GSSubtask.objects.get(subtask_id=id)
+    from src.gsserver.db.gstask import GSSubtask
+    subtask = GSSubtask.objects.get(subtask_id=id)
     subtask.execute()
