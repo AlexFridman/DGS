@@ -1,12 +1,18 @@
+from multiprocessing import current_process
+
 from celery import Celery
+from celery.signals import worker_process_init
+
+
+@worker_process_init.connect
+def fix_multiprocessing(**kwargs):
+    if not hasattr(current_process(), '_config'):
+        current_process()._config = {'semprefix': '/mp'}
+
 
 app = Celery()
 
 app.conf.update(
-    CELERY_TASK_SERIALIZER='json',
-    CELERY_ACCEPT_CONTENT=['json'],
-    CELERY_RESULT_SERIALIZER='json',
-
     CELERY_TRACK_STARTED=True,
     CELERY_ACKS_LATE=True,
     CELERYD_PREFETCH_MULTIPLIER=1,
