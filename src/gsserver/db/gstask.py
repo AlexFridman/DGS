@@ -44,7 +44,7 @@ class GSSubtask(me.Document):
             return
         success = False
         self.state = TaskState.RUNNING
-        self.start_time = datetime.datetime.now()
+        self.start_time = datetime.datetime.utcnow()
         self.save()
         script = self._get_script()
         module = RuntimeModule.from_string('module', '', script)
@@ -62,7 +62,7 @@ class GSSubtask(me.Document):
         finally:
             if success:
                 self.state = TaskState.SUCCESS
-                self.end_time = datetime.datetime.now()
+                self.end_time = datetime.datetime.utcnow()
             else:
                 self.state = TaskState.FAILED
             self.save()
