@@ -1,7 +1,10 @@
+import logging
 import time
 from threading import Thread, Condition
 
 from src.gsserver.db.gstask import GSTask, TaskState
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class TaskController(Thread):
@@ -12,11 +15,21 @@ class TaskController(Thread):
         self._running = False
         self._task_add_condition = Condition()
 
+    def _raise_task_add_event(self):
+        self._task_add_condition.acquire()
+        self._task_add_condition.notify()
+        self._task_add_condition.release()
+
+    def _wait_for_task_add_event(self):
+        self._task_add_condition.acquire()
+        self._task_add_condition.wait()
+        self._task_add_condition.release()
+
     def add_task(self, task):
         # TODO: think about mutual exclusion with task updation
-        task.run()
+        task.delay()
         task.save()
-        self._task_add_condition.notify()
+        self._raise_task_add_event()
 
     @staticmethod
     def cancel_task(task_id):
@@ -37,9 +50,10 @@ class TaskController(Thread):
         self._running = True
         while self._running:
             running_tasks = self._get_running_tasks()
+            logging.debug('Found {} running task(s)'.format(len(running_tasks)))
             if running_tasks:
                 self._update(running_tasks)
                 time.sleep(self.tick_interval)
             else:
-                self._task_add_condition.acquire()
-                self._task_add_condition.wait()
+                logging.debug('Waiting an event')
+                self._wait_for_task_add_event()
