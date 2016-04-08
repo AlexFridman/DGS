@@ -1,12 +1,15 @@
 import datetime
+import uuid
 import sys
 import traceback
-import uuid
+from types import FunctionType
 
 import mongoengine as me
-from pyext import RuntimeModule
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import ParameterGrid
+import numpy as np
+from pyext import RuntimeModule
+from sklearn.base import ClassifierMixin, RegressorMixin
 
 from src.gsserver.celeryapp import run_subtask
 
@@ -17,6 +20,21 @@ class TaskState:
     FAILED = 'FAILED'
     SUCCESS = 'SUCCESS'
     CANCELED = 'CANCELED'
+
+
+task_params = {
+    'Estimator': (True, lambda x: issubclass(x, (ClassifierMixin, RegressorMixin)),
+                  'Estimator should be subclass of ClassifierMixin or RegressorMixin'),
+    'scoring': (False, lambda x: isinstance(x, (str, FunctionType)), 'Scoring should be of type str or function'),
+    'X': (True, lambda x: isinstance(x, np.ndarray), 'X should be of type numpy.ndarray'),
+    'y': (True, lambda x: isinstance(x, np.ndarray), 'y should be of type numpy.ndarray'),
+    'param_grid': (True, lambda x: isinstance(x, dict), 'param_grid should be of type dict'),
+}
+
+
+class ScriptParseError(Exception):
+    def __init__(self, script_errors):
+        self.script_errors = script_errors
 
 
 class GSSubtask(me.Document):
@@ -95,6 +113,32 @@ class GSTask(me.Document):
     @classmethod
     def create(cls, param_grid, script):
         return cls().__custom__init__(param_grid, script)
+
+    @classmethod
+    def create_from_script(cls, code):
+        script_errors = {}
+        try:
+            module = RuntimeModule.from_string('module', '', code)
+        except Exception as e:
+            ex_type, ex, tb = sys.exc_info()
+            script_errors['script'] = {
+                'ex_type': str(ex_type),
+                'ex_message': ex,
+                'traceback': ''.join(traceback.format_tb(tb))
+            }
+            raise ScriptParseError(script_errors)
+
+        for param_name, (required, check_func, error_msg) in task_params.items():
+            param_in_module = param_name in vars(module)
+            if not param_in_module and required:
+                script_errors[param_name] = 'There is no {} in script'.format(param_name)
+            elif param_in_module and not check_func(vars(module)[param_name]):
+                script_errors[param_name] = error_msg
+
+        if script_errors:
+            raise ScriptParseError(script_errors)
+
+        return GSTask.create(vars(module)['param_grid'], code)
 
     @classmethod
     def get_by_id(cls, task_id):
