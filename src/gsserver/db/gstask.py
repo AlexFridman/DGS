@@ -1,12 +1,12 @@
 import datetime
-import uuid
-import traceback
 import sys
+import traceback
+import uuid
 
 import mongoengine as me
 from pyext import RuntimeModule
-from sklearn.grid_search import ParameterGrid
 from sklearn.cross_validation import cross_val_score
+from sklearn.grid_search import ParameterGrid
 
 from src.gsserver.celeryapp import run_subtask
 
@@ -136,6 +136,9 @@ class GSTask(me.Document):
         self.save()
 
     def delay(self):
+        self.state = TaskState.RUNNING
+        self.save()
+
         for subtask in self.subtasks:
             result = run_subtask.delay(subtask.subtask_id)
             subtask.celery_task_id = result.id
