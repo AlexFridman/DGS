@@ -96,6 +96,13 @@ class GSTask(me.Document):
     def create(cls, param_grid, script):
         return cls().__custom__init__(param_grid, script)
 
+    @classmethod
+    def get_by_id(cls, task_id):
+        try:
+            return GSTask.objects.get(task_id=task_id)
+        except me.DoesNotExist:
+            pass
+
     def update_state(self):
         if not self.state == TaskState.CANCELED:
             states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
