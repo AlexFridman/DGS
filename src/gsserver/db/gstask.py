@@ -32,7 +32,7 @@ class GSSubtask(me.Document):
 
     @property
     def parent_task(self):
-        return GSTask.objects.get(task_id=self.parent_task_id)
+        return GSTask.get_by_id(self.parent_task_id)
 
     def _get_script(self):
         return self.parent_task.script
