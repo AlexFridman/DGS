@@ -7,6 +7,11 @@ from src.gsserver.db.gstask import GSTask, TaskState
 logging.basicConfig(level=logging.DEBUG)
 
 
+class TaskNotFoundError(Exception):
+    def __init__(self, task_id):
+        self.task_id = task_id
+
+
 class TaskController(Thread):
     tick_interval = 1
 
@@ -32,10 +37,17 @@ class TaskController(Thread):
         self._raise_task_add_event()
 
     @staticmethod
+    def get_tasks():
+        tasks = GSTask.objects()
+        return [task.to_json() for task in tasks]
+
+    @staticmethod
     def cancel_task(task_id):
         task = GSTask.get_by_id(task_id)
         if task:
             task.cancel()
+        else:
+            raise TaskNotFoundError(task_id)
 
     @staticmethod
     def _update(tasks):
