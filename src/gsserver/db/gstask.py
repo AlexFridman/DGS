@@ -131,7 +131,7 @@ class GSTask(me.Document):
         self.param_errors = errors
         self.save()
 
-    def cancel_task(self):
+    def cancel(self):
         self.state = TaskState.CANCELED
         self.save()
 
