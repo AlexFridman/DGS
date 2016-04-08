@@ -1,15 +1,15 @@
 import datetime
-import uuid
 import sys
 import traceback
+import uuid
 from types import FunctionType
 
 import mongoengine as me
-from sklearn.cross_validation import cross_val_score
-from sklearn.grid_search import ParameterGrid
 import numpy as np
 from pyext import RuntimeModule
 from sklearn.base import ClassifierMixin, RegressorMixin
+from sklearn.cross_validation import cross_val_score
+from sklearn.grid_search import ParameterGrid
 
 from src.gsserver.celeryapp import run_subtask
 
@@ -132,8 +132,12 @@ class GSTask(me.Document):
             param_in_module = param_name in vars(module)
             if not param_in_module and required:
                 script_errors[param_name] = 'There is no {} in script'.format(param_name)
-            elif param_in_module and not check_func(vars(module)[param_name]):
-                script_errors[param_name] = error_msg
+            elif param_in_module:
+                try:
+                    if not check_func(vars(module)[param_name]):
+                        script_errors[param_name] = error_msg
+                except Exception as e:
+                    script_errors[param_name] = str(e)
 
         if script_errors:
             raise ScriptParseError(script_errors)
@@ -146,6 +150,13 @@ class GSTask(me.Document):
             return GSTask.objects.get(task_id=task_id)
         except me.DoesNotExist:
             pass
+
+    def to_json(self):
+        return {'task_id': self.task_id, 'state': self.state, 'start_time': self.start_time, \
+                'end_time': self.end_time, 'actualize_date': self.actualize_date, \
+                'n_subtasks': self.n_subtasks, 'n_completed': self.n_completed, \
+                'best_score': self.best_score, 'best_params': self.best_params, \
+                'param_errors': self.param_errors}
 
     def update_state(self):
         if not self.state == TaskState.CANCELED:
