@@ -2,7 +2,7 @@ import logging
 import time
 from threading import Thread, Condition
 
-from src.gsserver.db.gstask import GSTask, TaskState
+from dgs.gsserver.db.gstask import GSTask, TaskState
 
 logging.basicConfig(level=logging.DEBUG)
 

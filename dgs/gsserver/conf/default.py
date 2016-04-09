@@ -1,4 +1,4 @@
-from src.gsserver.conf.conf import Celery, Mongo, Master, GSServerConf
+from dgs.gsserver.conf.conf import Celery, Mongo, Master, GSServerConf
 
 mongo_conf = {
     'db': 'test',

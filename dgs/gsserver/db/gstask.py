@@ -11,7 +11,7 @@ from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import ParameterGrid
 
-from src.gsserver.celeryapp import run_subtask
+from dgs.gsserver.celeryapp import run_subtask
 
 
 class TaskState:

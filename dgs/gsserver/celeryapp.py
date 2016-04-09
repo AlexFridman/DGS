@@ -26,6 +26,6 @@ def init_celery_app(conf):
 
 @app.task
 def run_subtask(id):
-    from src.gsserver.db.gstask import GSSubtask
+    from dgs.gsserver.db.gstask import GSSubtask
     subtask = GSSubtask.objects.get(subtask_id=id)
     subtask.execute()
