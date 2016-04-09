@@ -2,34 +2,23 @@ import logging
 
 import chardet
 from flask import Flask
-from flask import render_template
 from flask import request
 from flask.ext.responses import json_response
 
-from src.gsserver.celeryapp import init_celery_app
-from src.gsserver.conf import conf
-from src.gsserver.db import init_mongodb
-from src.gsserver.db.gstask import GSTask, ScriptParseError
-from src.gsserver.task_controller import TaskController
-from src.gsserver.task_controller import TaskNotFoundError
+from dgs.gsserver.celeryapp import init_celery_app
+from dgs.gsserver.conf import conf
+from dgs.gsserver.db import init_mongodb
+from dgs.gsserver.db.gstask import GSTask, ScriptParseError
+from dgs.gsserver.task_controller import TaskController
+from dgs.gsserver.task_controller import TaskNotFoundError
 
 app = Flask(__name__)
 controller = TaskController()
 
 
-def run_master():
-    init_celery_app(conf.Celery.conf)
-    init_mongodb(conf.Mongo.connection)
-
-    try:
-        app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
-    except:
-        logging.exception('error while starting flask server, shutting down')
-
-
 @app.route('/')
 def index():
-    return render_template('index.html')
+    raise NotImplemented()
 
 
 @app.route('/cancel/<task_id>')
@@ -64,10 +53,20 @@ def info():
     return json_response({'tasks': TaskController.get_tasks()}, status_code=200)
 
 
+def run_master():
+    init_celery_app(conf.Celery.conf)
+    init_mongodb(conf.Mongo.connection)
+    controller.start()
+
+    try:
+        app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
+    except:
+        logging.exception('error while starting flask server, shutting down')
+
+
 def entry_point():
     run_master()
 
 
 if __name__ == '__main__':
     entry_point()
-    controller.start()
