@@ -4,12 +4,17 @@ import pymongo
 class Mongo:
     read_preference = pymongo.ReadPreference.PRIMARY
 
-    def __init__(self, db, host, username=None, password=None):
+    def __init__(self, db, hosts, username=None, password=None, rs=None):
         self.db = db
         self.username = username
         self.password = password
 
-        self.host = 'mongodb://{}:{}@{}/{}'.format(username, password, host, db)
+        if rs is not None:
+            self.host = 'mongodb://{}:{}@{}/{}?replicaSet={}'.format(username, password, hosts, db, rs)
+        elif username is None:
+            self.host = 'mongodb://{}/{}'.format(hosts, db)
+        else:
+            self.host = 'mongodb://{}:{}@{}/{}'.format(username, password, hosts, db)
 
         self.celery_broker_db = db
         self.celery_backend_db = db
