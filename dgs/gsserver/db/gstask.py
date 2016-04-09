@@ -20,6 +20,7 @@ class TaskState:
     FAILED = 'FAILED'
     SUCCESS = 'SUCCESS'
     CANCELED = 'CANCELED'
+    PENDING = 'PENDING'
 
 
 task_params = {
@@ -152,10 +153,10 @@ class GSTask(me.Document):
             pass
 
     def to_json(self):
-        return {'task_id': self.task_id, 'state': self.state, 'start_time': self.start_time, \
-                'end_time': self.end_time, 'actualize_date': self.actualize_date, \
-                'n_subtasks': self.n_subtasks, 'n_completed': self.n_completed, \
-                'best_score': self.best_score, 'best_params': self.best_params, \
+        return {'task_id': self.task_id, 'state': self.state, 'start_time': self.start_time,
+                'end_time': self.end_time, 'actualize_date': self.actualize_date,
+                'n_subtasks': self.n_subtasks, 'n_completed': self.n_completed,
+                'best_score': self.best_score, 'best_params': self.best_params,
                 'param_errors': self.param_errors}
 
     def update_state(self):
@@ -170,6 +171,7 @@ class GSTask(me.Document):
             else:
                 self.state = TaskState.SUCCESS
 
+        # TODO: states may be referenced before assignment
         self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
 
         start_times = [subtask.start_time for subtask in self.subtasks if subtask.state != TaskState.IDLE]
@@ -198,7 +200,8 @@ class GSTask(me.Document):
         self.save()
 
     def delay(self):
-        self.state = TaskState.RUNNING
+        # TODO: looks like synchronous. Change delay to apply_async
+        self.state = TaskState.PENDING
         self.save()
 
         for subtask in self.subtasks:
