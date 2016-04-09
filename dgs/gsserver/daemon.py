@@ -31,6 +31,12 @@ def cancel(task_id):
         return json_response({'message': 'ok'}, status_code=200)
 
 
+@app.route('/cancel_all')
+def cancel_all():
+    controller.cancel_all_tasks()
+    return json_response({'message': 'ok'}, status_code=200)
+
+
 @app.route('/add', methods=['POST'])
 def add():
     try:

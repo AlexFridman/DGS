@@ -2,6 +2,8 @@ import logging
 import time
 from threading import Thread, Condition
 
+from celery.task.control import discard_all
+
 from dgs.gsserver.db.gstask import GSTask, TaskState
 
 logging.basicConfig(level=logging.DEBUG)
@@ -48,6 +50,10 @@ class TaskController(Thread):
             task.cancel()
         else:
             raise TaskNotFoundError(task_id)
+
+    @staticmethod
+    def cancel_all_tasks():
+        discard_all()
 
     @staticmethod
     def _update(tasks):
