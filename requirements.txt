@@ -1,7 +1,9 @@
+chardet
 numpy
 pyext
 sklearn
 mongoengine
 flask
+flask-responses
 celery
 pymongo
