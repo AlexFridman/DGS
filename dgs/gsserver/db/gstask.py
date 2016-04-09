@@ -200,7 +200,6 @@ class GSTask(me.Document):
         self.save()
 
     def delay(self):
-        # TODO: looks like synchronous. Change delay to apply_async
         self.state = TaskState.PENDING
         self.save()
 
