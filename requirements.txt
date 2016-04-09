@@ -2,6 +2,5 @@ pyext
 sklearn
 mongoengine
 flask
-flask
 celery
 pymongo
