@@ -160,7 +160,7 @@ class GSTask(me.Document):
                 'param_errors': self.param_errors}
 
     def update_state(self):
-        if not self.state == TaskState.CANCELED:
+        if self.state != TaskState.CANCELED:
             states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
             if TaskState.FAILED in states:
                 self.state = TaskState.FAILED
