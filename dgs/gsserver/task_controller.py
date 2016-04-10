@@ -3,7 +3,6 @@ import time
 from threading import Thread, Condition
 
 from celery.task.control import discard_all
-
 from dgs.gsserver.db.gstask import GSTask, TaskState
 
 logging.basicConfig(level=logging.DEBUG)
@@ -39,9 +38,15 @@ class TaskController(Thread):
         self._raise_task_add_event()
 
     @staticmethod
-    def get_tasks():
-        tasks = GSTask.objects()
-        return [task.to_json() for task in tasks]
+    def get_tasks(sort, status, q, offset, count):
+        tasks = GSTask.objects(title__icontains=q)
+        if status:
+            tasks = tasks.filter(status=status)
+        total = tasks.clone().count()
+        if sort != 'date':
+            tasks = tasks
+        tasks = tasks.skip(offset).limit(count)
+        return total, [task.to_json() for task in tasks]
 
     @staticmethod
     def cancel_task(task_id):
