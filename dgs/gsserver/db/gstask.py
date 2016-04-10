@@ -173,11 +173,12 @@ class GSTask(me.Document):
 
         self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
 
-        start_times = [subtask.start_time for subtask in self.subtasks if subtask.state != TaskState.IDLE]
+        start_times = [subtask.start_time for subtask in self.subtasks if subtask.start_time is not None]
         if start_times:
             self.start_time = min(start_times)
 
-        end_times = [subtask.end_time for subtask in self.subtasks if subtask.state == TaskState.SUCCESS]
+        end_times = [subtask.end_time for subtask in self.subtasks if subtask.state == TaskState.SUCCESS \
+                     and subtask.end_time is not None]
         if end_times:
             self.end_time = max(end_times)
 
