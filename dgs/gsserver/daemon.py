@@ -56,7 +56,15 @@ def add():
 @app.route('/info')
 @cross_origin()
 def info():
-    return json_response({'tasks': TaskController.get_tasks()}, status_code=200)
+    args = request.args
+    sort = args.get('sort', 'date')
+    status = args.get('status')
+    q = args.get('q', '')
+    offset = int(args.get('offset', '0'))
+    count = int(args.get('count', '50'))
+    # TODO: validate params
+    total, items = TaskController.get_tasks(sort, status, q, offset, count)
+    return json_response({'tasks': {'count': total, 'items': items}}, status_code=200)
 
 
 def run_master():
