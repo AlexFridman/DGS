@@ -89,6 +89,7 @@ class GSSubtask(me.Document):
 
 class GSTask(me.Document):
     task_id = me.StringField(primary_key=True)
+    title = me.StringField()
     subtasks = me.ListField(me.ReferenceField(GSSubtask, reverse_delete_rule=me.NULLIFY))
     state = me.StringField()
     script = me.StringField()
@@ -102,13 +103,13 @@ class GSTask(me.Document):
     param_errors = me.DictField()
     note = me.StringField()
 
-    def __custom__init__(self, param_grid, script):
+    def __custom__init__(self, param_grid, script, title=''):
         task_id = str(uuid.uuid4())
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
             param_comb in ParameterGrid(param_grid)]
         GSSubtask.objects.insert(subtasks)
-        super().__init__(task_id=task_id, script=script, subtasks=subtasks, n_subtasks=len(subtasks))
+        super().__init__(task_id=task_id, title=title, script=script, subtasks=subtasks, n_subtasks=len(subtasks))
         return self
 
     @classmethod
@@ -116,7 +117,7 @@ class GSTask(me.Document):
         return cls().__custom__init__(param_grid, script)
 
     @classmethod
-    def create_from_script(cls, code):
+    def create_from_script(cls, code, title=''):
         script_errors = {}
         try:
             module = RuntimeModule.from_string('module', '', code)
@@ -157,7 +158,7 @@ class GSTask(me.Document):
                 'end_time': self.end_time, 'actualize_date': self.actualize_date,
                 'n_subtasks': self.n_subtasks, 'n_completed': self.n_completed,
                 'best_score': self.best_score, 'best_params': self.best_params,
-                'param_errors': self.param_errors}
+                'param_errors': self.param_errors, 'title': self.title}
 
     def update_state(self):
         states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
