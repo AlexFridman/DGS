@@ -1,15 +1,16 @@
 import logging
+import re
 
 import chardet
 from flask import Flask
 from flask import request
-from flask.ext.responses import json_response
 from flask.ext.cors import cross_origin
+from flask.ext.responses import json_response
 
 from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
-from dgs.gsserver.db.gstask import GSTask, ScriptParseError
+from dgs.gsserver.db.gstask import GSTask, ScriptParseError, TaskState
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
 
@@ -53,18 +54,62 @@ def add():
         return json_response({'message': 'ok'}, status_code=200)
 
 
+class SearchRequestError(Exception):
+    def __init__(self, errors):
+        self.errors = errors
+
+
+def validate_search_params(raw_params):
+    params_validators_transformers = {
+        'sort': (lambda x: True, None, None),
+        'q': (None, None, None),
+        'status': (lambda x: x in vars(TaskState), None, 'No such state'),
+        'offset': (lambda x: re.match(r'\d+', x), lambda x: int(x), None),
+        'count': (lambda x: re.match(r'\d+', x), lambda x: int(x), None)
+    }
+
+    errors = {}
+    params = {}
+
+    for name, (validator, transformer, validation_error_message) in params_validators_transformers.items():
+        raw_value = raw_params[name]
+        try:
+            if validator:
+                validator(raw_value)
+        except Exception as e:
+            errors[name] = str(e)
+        else:
+            try:
+                value = transformer(raw_value) if transformer else raw_value
+            except Exception as e:
+                errors[name] = validation_error_message if validation_error_message else str(e)
+            else:
+                params[name] = value
+
+    if errors:
+        raise SearchRequestError(errors)
+    return params
+
+
 @app.route('/info')
 @cross_origin()
 def info():
     args = request.args
-    sort = args.get('sort', 'date')
-    status = args.get('status')
-    q = args.get('q', '')
-    offset = int(args.get('offset', '0'))
-    count = int(args.get('count', '50'))
-    # TODO: validate params
-    total, items = TaskController.get_tasks(sort, status, q, offset, count)
-    return json_response({'tasks': {'count': total, 'items': items}}, status_code=200)
+    search_params = {
+        'sort': args.get('sort', 'date'),
+        'q': args.get('q', ''),
+        'status': args.get('status'),
+        'offset': args.get('offset', '0'),
+        'count': args.get('count', '50')
+    }
+
+    try:
+        params = validate_search_params(search_params)
+    except SearchRequestError as e:
+        return json_response({'errors': e.errors})
+    else:
+        total, items = TaskController.get_tasks(params)
+        return json_response({'tasks': {'count': total, 'items': items}}, status_code=200)
 
 
 def run_master():
