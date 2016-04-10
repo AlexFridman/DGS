@@ -160,8 +160,8 @@ class GSTask(me.Document):
                 'param_errors': self.param_errors}
 
     def update_state(self):
+        states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
-            states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
             if TaskState.FAILED in states:
                 self.state = TaskState.FAILED
             elif TaskState.IDLE in states:
@@ -171,7 +171,6 @@ class GSTask(me.Document):
             else:
                 self.state = TaskState.SUCCESS
 
-        # TODO: states may be referenced before assignment
         self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
 
         start_times = [subtask.start_time for subtask in self.subtasks if subtask.state != TaskState.IDLE]
