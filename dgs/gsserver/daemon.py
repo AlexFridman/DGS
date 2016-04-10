@@ -4,6 +4,7 @@ import chardet
 from flask import Flask
 from flask import request
 from flask.ext.responses import json_response
+from flask.ext.cors import cross_origin
 
 from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
@@ -16,12 +17,8 @@ app = Flask(__name__)
 controller = TaskController()
 
 
-@app.route('/')
-def index():
-    raise NotImplemented()
-
-
 @app.route('/cancel/<task_id>')
+@cross_origin()
 def cancel(task_id):
     try:
         TaskController.cancel_task(task_id)
@@ -32,12 +29,14 @@ def cancel(task_id):
 
 
 @app.route('/cancel_all')
+@cross_origin()
 def cancel_all():
     controller.cancel_all_tasks()
     return json_response({'message': 'ok'}, status_code=200)
 
 
 @app.route('/add', methods=['POST'])
+@cross_origin()
 def add():
     try:
         data = request.data
@@ -55,6 +54,7 @@ def add():
 
 
 @app.route('/info')
+@cross_origin()
 def info():
     return json_response({'tasks': TaskController.get_tasks()}, status_code=200)
 
