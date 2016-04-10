@@ -2,7 +2,7 @@ from dgs.gsserver.conf.conf import Celery, Mongo, Master, GSServerConf
 
 mongo_conf = {
     'db': 'test',
-    'host': 'localhost:27017',
+    'hosts': 'localhost:27017',
     'username': 'alfrid_db',
     'password': '1234'
 }
