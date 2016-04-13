@@ -1,0 +1,29 @@
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>State</th>
+        <th>Start time</th>
+        <th>End time</th>
+        <th>Subtasks</th>
+        <th>Completed</th>
+        <th>Done</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="item in list.items">
+        <td ng-switch="item.state">
+            <span ng-switch-when="IDLE" class="label label-default">IDLE</span>
+            <span ng-switch-when="RUNNING" class="label label-primary">RUNNING</span>
+            <span ng-switch-when="SUCCESS" class="label label-success">SUCCESS</span>
+            <span ng-switch-when="PENDING" class="label label-info">PENDING</span>
+            <span ng-switch-when="CANCELED" class="label label-warning">CANCELED</span>
+            <span ng-switch-when="FAILED" class="label label-danger">FAILED</span>
+        </td>
+        <td>{{item.start_time}}</td>
+        <td>{{item.end_time}}</td>
+        <td>{{item.n_subtasks}}</td>
+        <td>{{item.n_completed}}</td>
+        <td><input type="checkbox" ng-model="item.done"/></td>
+    </tr>
+    </tbody>
+</table>

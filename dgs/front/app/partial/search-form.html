@@ -1,0 +1,40 @@
+<div class="form-inline">
+    <div class="form-group">
+        <div class="col-md-8">
+            <input class="form-control" ng-model="formParams.q" placeholder="Title"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <select class="form-control" ng-model="formParams.status"
+                    ng-options="o as o for o in options.status"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <select class="form-control" ng-model="formParams.sort" ng-options="o as o for o in options.sort"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <input type="number" class="form-control" ng-model="formParams.offset" uib-popover="Offset"
+                   popover-trigger="focus" placeholder="Offset"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <input type="number" class="form-control" ng-model="formParams.count" uib-popover="Count"
+                   popover-trigger="focus" placeholder="Count"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <button class="btn btn-default" ng-click="search()">Search</button>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-8">
+            <button class="btn btn-default" ng-click="reset()">Reset</button>
+        </div>
+    </div>
+</div>
