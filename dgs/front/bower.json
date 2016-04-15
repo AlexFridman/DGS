@@ -8,9 +8,12 @@
   "dependencies": {
     "angular": "latest",
     "ui-bootstrap": "latest",
-    "angular-route": "~1.4.0",
-    "angular-loader": "~1.4.0",
-    "angular-mocks": "~1.4.0",
-    "html5-boilerplate": "~5.2.0"
+    "angular-route": "latest",
+    "angular-loader": "latest",
+    "angular-mocks": "latest",
+    "html5-boilerplate": "latest",
+    "jquery": "latest",
+    "bootstrap": "latest",
+    "angular-bootstrap": "latest"
   }
 }
