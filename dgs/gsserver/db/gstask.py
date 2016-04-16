@@ -6,7 +6,6 @@ from types import FunctionType
 
 import mongoengine as me
 import numpy as np
-from pyext import RuntimeModule
 from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import ParameterGrid
@@ -64,10 +63,13 @@ class GSSubtask(me.Document):
         self.start_time = datetime.datetime.utcnow()
         self.save()
         script = self._get_script()
-        module = RuntimeModule.from_string('module', '', script)
+        resources = self.parent_task.get_resources()
+        module_globals = {'resources': resources}
+        exec(script, {}, )
         try:
-            self.score = cross_val_score(module.Estimator(**self.params), X=module.X, y=module.y,
-                                         scoring=vars(module).get('scoring')).mean()
+            self.score = cross_val_score(module_globals['Estimator'](**self.params), X=module_globals['X'],
+                                         y=module_globals['y'],
+                                         scoring=module_globals.get('scoring')).mean()
             success = True
         except Exception as e:
             ex_type, ex, tb = sys.exc_info()
@@ -103,9 +105,11 @@ class GSTask(me.Document):
     note = me.StringField()
 
     def __custom__init__(self, param_grid, script, resources=None, title=''):
+        resources = resources or {}
         if not GSResource.is_resources_available(resources.values()):
             raise ResourceUnavailableError()
         task_id = str(uuid.uuid4())
+        GSResource.lock_resources(task_id, resources.values())
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
             param_comb in ParameterGrid(param_grid)]
@@ -117,11 +121,18 @@ class GSTask(me.Document):
     def create(cls, param_grid, script, resources=None, title=''):
         return cls().__custom__init__(param_grid, script, resources, title)
 
+    # TODO: test it
     @classmethod
     def create_from_script(cls, code, resources=None, title=''):
         script_errors = {}
+        temp_locker = uuid.uuid4()
         try:
-            module = RuntimeModule.from_string('module', '', code)
+            resources = cls._get_resources(resources or {})
+            GSResource.lock_resources(temp_locker, resources.values())
+            module_globals = {'resources': resources}
+            exec(code, {}, module_globals)
+        except ResourceNotFoundError:
+            raise
         except Exception as e:
             ex_type, ex, tb = sys.exc_info()
             script_errors['script'] = {
@@ -130,31 +141,37 @@ class GSTask(me.Document):
                 'traceback': ''.join(traceback.format_tb(tb))
             }
             raise ScriptParseError(script_errors)
+        else:
+            for param_name, (required, check_func, error_msg) in task_params.items():
+                param_in_module = param_name in module_globals
+                if not param_in_module and required:
+                    script_errors[param_name] = 'There is no {} in script'.format(param_name)
+                elif param_in_module:
+                    try:
+                        if not check_func(module_globals[param_name]):
+                            script_errors[param_name] = error_msg
+                    except Exception as e:
+                        script_errors[param_name] = str(e)
 
-        for param_name, (required, check_func, error_msg) in task_params.items():
-            param_in_module = param_name in vars(module)
-            if not param_in_module and required:
-                script_errors[param_name] = 'There is no {} in script'.format(param_name)
-            elif param_in_module:
-                try:
-                    if not check_func(vars(module)[param_name]):
-                        script_errors[param_name] = error_msg
-                except Exception as e:
-                    script_errors[param_name] = str(e)
+            if script_errors:
+                raise ScriptParseError(script_errors)
 
-        if script_errors:
-            raise ScriptParseError(script_errors)
-
-        return GSTask.create(vars(module)['param_grid'], code, resources, title)
+            return GSTask.create(module_globals['param_grid'], code, resources, title)
+        finally:
+            GSResource.unlock_resources(temp_locker, resources.values())
 
     def get_resources(self):
-        resources = {}
-        for resource_alias, resource_id in self.resources.items():
+        return self._get_resources(self.resources)
+
+    @staticmethod
+    def _get_resources(resources):
+        result = {}
+        for resource_alias, resource_id in resources.items():
             resource = GSResource.get_by_id(resource_id)
             if not resource:
                 raise ResourceNotFoundError(resource_id)
-            resources[resource_alias] = resource.content
-        return resources
+            result[resource_alias] = resource.content
+        return result
 
     @classmethod
     def get_by_id(cls, task_id):
@@ -216,7 +233,6 @@ class GSTask(me.Document):
 
     def delay(self):
         self.state = TaskState.PENDING
-        GSResource.lock_resources(self.task_id, self.resources.values())
         self.save()
 
         for subtask in self.subtasks:
