@@ -34,8 +34,9 @@ class GSResource(me.Document):
         if cls.is_resources_available(resource_ids):
             for resource_id in resource_ids:
                 resource = cls.get_by_id(resource_id)
-                resource.lockers.append(locker_id)
-                resource.save()
+                if locker_id not in resource.lockers:
+                    resource.lockers.append(locker_id)
+                    resource.save()
         else:
             raise ResourceUnavailableError()
 
