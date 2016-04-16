@@ -36,8 +36,6 @@ task_params = {
 }
 
 
-
-
 class GSSubtask(me.Document):
     subtask_id = me.StringField(primary_key=True)
     celery_task_id = me.StringField()
@@ -184,6 +182,9 @@ class GSTask(me.Document):
             else:
                 self.state = TaskState.SUCCESS
 
+        if self.state in (TaskState.FAILED, TaskState.CANCELED):
+            GSResource.unlock_resources(self.task_id, self.resources.values())
+
         self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
 
         start_times = [subtask.start_time for subtask in self.subtasks if subtask.start_time is not None]
@@ -210,10 +211,12 @@ class GSTask(me.Document):
 
     def cancel(self):
         self.state = TaskState.CANCELED
+        GSResource.unlock_resources(self.task_id, self.resources.values())
         self.save()
 
     def delay(self):
         self.state = TaskState.PENDING
+        GSResource.lock_resources(self.task_id, self.resources.values())
         self.save()
 
         for subtask in self.subtasks:
