@@ -10,7 +10,8 @@ from flask.ext.responses import json_response
 from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
-from dgs.gsserver.db.gstask import GSTask, ScriptParseError, TaskState, ResourceUnavailableError
+from dgs.gsserver.db.gstask import GSTask, TaskState
+from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
 
@@ -57,11 +58,6 @@ def add():
     else:
         controller.add_task(task)
         return json_response({'message': 'ok'}, status_code=200)
-
-
-class SearchRequestError(Exception):
-    def __init__(self, errors):
-        self.errors = errors
 
 
 def validate_search_params(raw_params):

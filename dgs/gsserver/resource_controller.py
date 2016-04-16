@@ -2,11 +2,7 @@ import time
 from threading import Thread, Condition
 
 from dgs.gsserver.db.gsresource import GSResource
-
-
-class ResourceNotFoundError(Exception):
-    def __init__(self, resource_id):
-        self.resource_id = resource_id
+from dgs.gsserver.errors import ResourceNotFoundError
 
 
 class ResourceController(Thread):

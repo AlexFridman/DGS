@@ -13,6 +13,7 @@ from sklearn.grid_search import ParameterGrid
 
 from dgs.gsserver.celeryapp import run_subtask
 from dgs.gsserver.db.gsresource import GSResource
+from dgs.gsserver.errors import ResourceUnavailableError, ScriptParseError
 from dgs.gsserver.resource_controller import ResourceNotFoundError
 
 
@@ -35,9 +36,6 @@ task_params = {
 }
 
 
-class ScriptParseError(Exception):
-    def __init__(self, script_errors):
-        self.script_errors = script_errors
 
 
 class GSSubtask(me.Document):
@@ -87,10 +85,6 @@ class GSSubtask(me.Document):
             else:
                 self.state = TaskState.FAILED
             self.save()
-
-
-class ResourceUnavailableError(Exception):
-    pass
 
 
 class GSTask(me.Document):
