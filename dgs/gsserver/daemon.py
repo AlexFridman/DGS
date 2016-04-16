@@ -41,6 +41,7 @@ def cancel_all():
 def add():
     try:
         data = request.data
+
         encoding = chardet.detect(data)
         print(encoding)
         if not encoding:
@@ -63,7 +64,7 @@ def validate_search_params(raw_params):
     params_validators_transformers = {
         'sort': (lambda x: True, None, None),
         'q': (None, None, None),
-        'status': (lambda x: x in vars(TaskState), None, 'No such state'),
+        'state': (lambda x: x in vars(TaskState), None, 'No such state'),
         'offset': (lambda x: re.match(r'\d+', x), lambda x: int(x), None),
         'count': (lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
@@ -96,9 +97,9 @@ def validate_search_params(raw_params):
 def info():
     args = request.args
     search_params = {
-        'sort': args.get('sort', 'date'),
+        'sort': args.get('sort', 'date').lower(),
         'q': args.get('q', ''),
-        'status': args.get('status'),
+        'state': args.get('state', 'all').lower(),
         'offset': args.get('offset', '0'),
         'count': args.get('count', '50')
     }
@@ -108,7 +109,7 @@ def info():
     except SearchRequestError as e:
         return json_response({'errors': e.errors})
     else:
-        total, items = TaskController.get_tasks(params)
+        total, items = TaskController.get_tasks(**params)
         return json_response({'tasks': {'count': total, 'items': items}}, status_code=200)
 
 
