@@ -6,3 +6,4 @@ class GSResource(me.Document):
     name = me.StringField()
     content = me.BinaryField()
     is_locked = me.BooleanField(default=False)
+    is_deletion_requested = me.BooleanField()
