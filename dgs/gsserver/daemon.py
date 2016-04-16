@@ -10,7 +10,7 @@ from flask.ext.responses import json_response
 from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
-from dgs.gsserver.db.gstask import GSTask, ScriptParseError, TaskState
+from dgs.gsserver.db.gstask import GSTask, ScriptParseError, TaskState, ResourceUnavailableError
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
 
@@ -39,17 +39,21 @@ def cancel_all():
 @app.route('/add', methods=['POST'])
 @cross_origin()
 def add():
+    args = request.args
     try:
         data = request.data
 
         encoding = chardet.detect(data)
-        print(encoding)
         if not encoding:
             return json_response({'message': 'Invalid encoding'}, status_code=400)
         data = data.decode(encoding['encoding'])
-        task = GSTask.create_from_script(data)
+        resources = args.get('resources', {})
+        title = args.get('title', '')
+        task = GSTask.create_from_script(data, resources, title)
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
+    except ResourceUnavailableError as e:
+        return json_response({'message': 'Some resources as unavailable'}, status_code=400)
     else:
         controller.add_task(task)
         return json_response({'message': 'ok'}, status_code=200)
