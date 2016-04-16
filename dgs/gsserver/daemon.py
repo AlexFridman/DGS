@@ -124,6 +124,24 @@ def run_master():
         logging.exception('error while starting flask server, shutting down')
 
 
+@app.route('/add_resource')
+@cross_origin()
+def add_resource():
+    pass
+
+
+@app.route('/resource_info')
+@cross_origin()
+def resource_info():
+    pass
+
+
+@app.route('/delete_resource/<resource_id>')
+@cross_origin()
+def delete_resource(resource_id):
+    pass
+
+
 def entry_point():
     run_master()
 
