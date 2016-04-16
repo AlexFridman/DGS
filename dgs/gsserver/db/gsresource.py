@@ -35,6 +35,7 @@ class GSResource(me.Document):
             for resource_id in resource_ids:
                 resource = cls.get_by_id(resource_id)
                 resource.lockers.append(locker_id)
+                resource.save()
         else:
             raise ResourceUnavailableError()
 
@@ -44,5 +45,6 @@ class GSResource(me.Document):
             for resource_id in resource_ids:
                 resource = cls.get_by_id(resource_id)
                 resource.lockers.remove(locker_id)
+                resource.save()
         else:
             raise ResourceUnavailableError()
