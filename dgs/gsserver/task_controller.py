@@ -39,10 +39,10 @@ class TaskController(Thread):
         self._raise_task_add_event()
 
     @staticmethod
-    def get_tasks(sort, status, q, offset, count):
+    def get_tasks(sort='date', state=None, q='', offset=0, count=50):
         tasks = GSTask.objects(title__icontains=q)
-        if status:
-            tasks = tasks.filter(status__iexact=status)
+        if state and state != 'all':
+            tasks = tasks.filter(state__iexact=state)
         total = tasks.clone().count()
         if sort != 'date':
             tasks = tasks
