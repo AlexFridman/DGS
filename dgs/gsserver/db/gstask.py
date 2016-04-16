@@ -12,6 +12,8 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import ParameterGrid
 
 from dgs.gsserver.celeryapp import run_subtask
+from dgs.gsserver.db.gsresource import GSResource
+from dgs.gsserver.resource_controller import ResourceNotFoundError
 
 
 class TaskState:
@@ -87,10 +89,15 @@ class GSSubtask(me.Document):
             self.save()
 
 
+class ResourceUnavailableError(Exception):
+    pass
+
+
 class GSTask(me.Document):
     task_id = me.StringField(primary_key=True)
     title = me.StringField()
     subtasks = me.ListField(me.ReferenceField(GSSubtask, reverse_delete_rule=me.NULLIFY))
+    resources = me.DictField()
     state = me.StringField()
     script = me.StringField()
     start_time = me.DateTimeField()
@@ -103,7 +110,9 @@ class GSTask(me.Document):
     param_errors = me.DictField()
     note = me.StringField()
 
-    def __custom__init__(self, param_grid, script, title=''):
+    def __custom__init__(self, param_grid, script, resources=None, title=''):
+        if not GSResource.is_resources_available(resources.values()):
+            raise ResourceUnavailableError()
         task_id = str(uuid.uuid4())
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
@@ -113,11 +122,11 @@ class GSTask(me.Document):
         return self
 
     @classmethod
-    def create(cls, param_grid, script):
-        return cls().__custom__init__(param_grid, script)
+    def create(cls, param_grid, script, resources=None, title=''):
+        return cls().__custom__init__(param_grid, script, resources, title)
 
     @classmethod
-    def create_from_script(cls, code, title=''):
+    def create_from_script(cls, code, resources=None, title=''):
         script_errors = {}
         try:
             module = RuntimeModule.from_string('module', '', code)
@@ -144,7 +153,16 @@ class GSTask(me.Document):
         if script_errors:
             raise ScriptParseError(script_errors)
 
-        return GSTask.create(vars(module)['param_grid'], code)
+        return GSTask.create(vars(module)['param_grid'], code, resources, title)
+
+    def get_resources(self):
+        resources = {}
+        for resource_alias, resource_id in self.resources.items():
+            resource = GSResource.get_by_id(resource_id)
+            if not resource:
+                raise ResourceNotFoundError(resource_id)
+            resources[resource_alias] = resource.content
+        return resources
 
     @classmethod
     def get_by_id(cls, task_id):
