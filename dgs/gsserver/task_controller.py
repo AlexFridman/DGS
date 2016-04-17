@@ -5,6 +5,7 @@ from threading import Thread, Condition
 import mongoengine as me
 from celery.task.control import discard_all
 
+from dgs.gsserver.conf.conf import GSServerConf
 from dgs.gsserver.db.gstask import GSTask, TaskState
 
 logging.basicConfig(level=logging.DEBUG)
@@ -16,13 +17,12 @@ class TaskNotFoundError(Exception):
 
 
 class TaskController(Thread):
-    tick_interval = 1
+    cfg = GSServerConf.TaskController
 
-    def __init__(self, wait_task_add_event=True):
+    def __init__(self):
         super().__init__()
         self._running = False
         self._task_add_condition = Condition()
-        self._wait_task_add_condition = wait_task_add_event
 
     def _raise_task_add_event(self):
         self._task_add_condition.acquire()
@@ -80,9 +80,9 @@ class TaskController(Thread):
             logging.debug('Found {} task(s) to update'.format(len(tasks_to_update)))
             if tasks_to_update:
                 self._update(tasks_to_update)
-                time.sleep(self.tick_interval)
-            elif self._wait_task_add_condition:
+                time.sleep(self.cfg.tick_interval)
+            elif self.cfg.wait_task_add_event:
                 logging.debug('Waiting an event')
                 self._wait_for_task_add_event()
             else:
-                time.sleep(self.tick_interval)
+                time.sleep(self.cfg.tick_interval)

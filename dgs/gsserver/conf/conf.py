@@ -46,10 +46,14 @@ class Celery:
 
 
 class Master:
-    def __init__(self, host, port, use_task_add_event):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.use_task_add_event = use_task_add_event
+
+
+class TaskControllerConfig:
+    tick_interval = 1
+    wait_task_add_event = False
 
 
 class GSServerConf:
@@ -57,3 +61,4 @@ class GSServerConf:
         self.Mongo = mongo
         self.Celery = celery
         self.Master = master
+        self.TaskController = TaskControllerConfig
