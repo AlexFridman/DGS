@@ -1,5 +1,6 @@
 import logging
 import re
+import uuid
 
 import chardet
 from flask import Flask
@@ -12,11 +13,13 @@ from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
 from dgs.gsserver.db.gstask import GSTask, TaskState
 from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError
+from dgs.gsserver.resource_controller import ResourceController
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
 
 app = Flask(__name__)
-controller = TaskController()
+task_controller = TaskController()
+resource_controller = ResourceController()
 
 
 @app.route('/cancel/<task_id>')
@@ -33,7 +36,7 @@ def cancel(task_id):
 @app.route('/cancel_all')
 @cross_origin()
 def cancel_all():
-    controller.cancel_all_tasks()
+    task_controller.cancel_all_tasks()
     return json_response({'message': 'ok'}, status_code=200)
 
 
@@ -41,6 +44,8 @@ def cancel_all():
 @cross_origin()
 def add():
     args = request.args
+    temp_locker = uuid.uuid4()
+    resource_ids = None
     try:
         data = request.data
 
@@ -49,15 +54,22 @@ def add():
             return json_response({'message': 'Invalid encoding'}, status_code=400)
         data = data.decode(encoding['encoding'])
         resources = args.get('resources', {})
+        resource_ids = resources.values()
         title = args.get('title', '')
+        # TODO: probably, shoul be moved elsewhere
+        resource_controller.lock_resources(temp_locker, resource_ids)
         task = GSTask.create_from_script(data, resources, title)
+        resource_controller.lock_resources(task.task_id, resource_ids)
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
-        return json_response({'message': 'Some resources as unavailable'}, status_code=400)
+        return json_response({'message': 'Some resources are unavailable'}, status_code=400)
     else:
-        controller.add_task(task)
+        task_controller.add_task(task)
         return json_response({'message': 'ok'}, status_code=200)
+    finally:
+        if resource_ids:
+            resource_controller.unlock_resources(temp_locker, resource_ids)
 
 
 def validate_search_params(raw_params):
@@ -116,7 +128,7 @@ def info():
 def run_master():
     init_celery_app(conf.Celery.conf)
     init_mongodb(conf.Mongo.connection)
-    controller.start()
+    task_controller.start()
 
     try:
         app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)

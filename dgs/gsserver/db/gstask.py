@@ -125,10 +125,8 @@ class GSTask(me.Document):
     @classmethod
     def create_from_script(cls, code, resources=None, title=''):
         script_errors = {}
-        temp_locker = uuid.uuid4()
         try:
             resources = cls._get_resources(resources or {})
-            GSResource.lock_resources(temp_locker, resources.values())
             module_globals = {'resources': resources}
             exec(code, {}, module_globals)
         except ResourceNotFoundError:
@@ -157,8 +155,6 @@ class GSTask(me.Document):
                 raise ScriptParseError(script_errors)
 
             return GSTask.create(module_globals['param_grid'], code, resources, title)
-        finally:
-            GSResource.unlock_resources(temp_locker, resources.values())
 
     def get_resources(self):
         return self._get_resources(self.resources)
