@@ -9,6 +9,9 @@ class Mongo:
         self.username = username
         self.password = password
 
+        if not isinstance(hosts, str):
+            hosts = ','.join(hosts)
+
         if rs is not None:
             self.host = 'mongodb://{}:{}@{}/{}?replicaSet={}'.format(username, password, hosts, db, rs)
         elif username is None:
