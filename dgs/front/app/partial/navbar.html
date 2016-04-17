@@ -92,7 +92,7 @@
                             Name
                         </label>
                         <div class="col-sm-10">
-                            <input class="form-control" id="title" type="text" ng-model="formParams.title">
+                            <input class="form-control" id="title" type="text" ng-model="formParams.title" required>
                         </div>
 
                         <div class="col-sm-offset-2 col-sm-10">
@@ -100,8 +100,10 @@
                             <label for="inputFile">
                                 File input
                             </label>
-                            <input id="inputFile" type="file"
-                                   onchange="angular.element(this).scope().onFileSelect(this.files)">
+                            <input id="inputFile" type="file" file="file"
+                                   onchange="angular.element(this).scope().onFileSelect(this.files)" required/>
+                            <!--<input id="inputFile" type="file"
+                                   onchange="angular.element(this).scope().onFileSelect(this.files)">-->
                         </div>
 
                         <div class="col-sm-offset-2 col-sm-10">
