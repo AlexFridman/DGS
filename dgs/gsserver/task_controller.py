@@ -18,10 +18,11 @@ class TaskNotFoundError(Exception):
 class TaskController(Thread):
     tick_interval = 1
 
-    def __init__(self):
+    def __init__(self, wait_task_add_event=True):
         super().__init__()
         self._running = False
         self._task_add_condition = Condition()
+        self._wait_task_add_condition = wait_task_add_event
 
     def _raise_task_add_event(self):
         self._task_add_condition.acquire()
@@ -80,6 +81,6 @@ class TaskController(Thread):
             if tasks_to_update:
                 self._update(tasks_to_update)
                 time.sleep(self.tick_interval)
-            else:
+            elif self._wait_task_add_condition:
                 logging.debug('Waiting an event')
                 self._wait_for_task_add_event()

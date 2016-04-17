@@ -18,7 +18,7 @@ from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
 
 app = Flask(__name__)
-task_controller = TaskController()
+task_controller = TaskController(conf.Master.use_task_add_event)
 resource_controller = ResourceController()
 
 
