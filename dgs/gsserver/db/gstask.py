@@ -112,7 +112,8 @@ class GSTask(me.Document):
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
             param_comb in ParameterGrid(param_grid)]
         GSSubtask.objects.insert(subtasks)
-        super().__init__(task_id=task_id, title=title, script=script, subtasks=subtasks, n_subtasks=len(subtasks))
+        super().__init__(task_id=task_id, title=title, script=script, subtasks=subtasks, n_subtasks=len(subtasks),
+                         resources=resources)
         return self
 
     @classmethod
