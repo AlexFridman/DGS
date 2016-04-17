@@ -65,7 +65,7 @@ class GSSubtask(me.Document):
         script = self._get_script()
         resources = self.parent_task.get_resources()
         module_globals = {'resources': resources}
-        exec(script, {}, )
+        exec(script, {}, module_globals)
         try:
             self.score = cross_val_score(module_globals['Estimator'](**self.params), X=module_globals['X'],
                                          y=module_globals['y'],
