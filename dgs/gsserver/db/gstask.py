@@ -183,21 +183,19 @@ class GSTask(me.Document):
                 'param_errors': self.param_errors, 'title': self.title}
 
     def update_state(self):
-        states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
+        subtask_states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
-            if TaskState.FAILED in states:
+            if TaskState.FAILED in subtask_states:
                 self.state = TaskState.FAILED
-            elif TaskState.IDLE in states:
-                self.state = TaskState.IDLE
-            elif TaskState.RUNNING in states:
+            elif TaskState.RUNNING in subtask_states:
                 self.state = TaskState.RUNNING
-            else:
+            elif all(state == TaskState.SUCCESS for state in subtask_states):
                 self.state = TaskState.SUCCESS
 
         if self.state in (TaskState.FAILED, TaskState.CANCELED):
             GSResource.unlock_resources(self.task_id, self.resources.values())
 
-        self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
+        self.n_completed = sum(1 for state in subtask_states if state == TaskState.SUCCESS)
 
         start_times = [subtask.start_time for subtask in self.subtasks if subtask.start_time is not None]
         if start_times:

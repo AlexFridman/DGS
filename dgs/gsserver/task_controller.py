@@ -2,6 +2,7 @@ import logging
 import time
 from threading import Thread, Condition
 
+import mongoengine as me
 from celery.task.control import discard_all
 
 from dgs.gsserver.db.gstask import GSTask, TaskState
@@ -67,16 +68,17 @@ class TaskController(Thread):
             task.update_state()
 
     @staticmethod
-    def _get_running_tasks():
-        return GSTask.objects(state=TaskState.RUNNING)
+    def _get_tasks_to_update():
+        return GSTask.objects(
+            me.Q(state__ne=TaskState.FAILED) & me.Q(state__ne=TaskState.CANCELED) & me.Q(state__ne=TaskState.SUCCESS))
 
     def run(self):
         self._running = True
         while self._running:
-            running_tasks = self._get_running_tasks()
-            logging.debug('Found {} running task(s)'.format(len(running_tasks)))
-            if running_tasks:
-                self._update(running_tasks)
+            tasks_to_update = self._get_tasks_to_update()
+            logging.debug('Found {} task(s) to update'.format(len(tasks_to_update)))
+            if tasks_to_update:
+                self._update(tasks_to_update)
                 time.sleep(self.tick_interval)
             else:
                 logging.debug('Waiting an event')
