@@ -1,3 +1,5 @@
+import uuid
+
 import mongoengine as me
 
 from dgs.gsserver.errors import ResourceUnavailableError
@@ -5,10 +7,16 @@ from dgs.gsserver.errors import ResourceUnavailableError
 
 class GSResource(me.Document):
     resource_id = me.StringField(primary_key=True)
-    name = me.StringField()
+    name = me.StringField(default=resource_id)
     content = me.BinaryField()
-    is_deletion_requested = me.BooleanField()
+    is_deletion_requested = me.BooleanField(default=False)
     lockers = me.ListField()
+
+    @classmethod
+    def create(cls, content, name=None):
+        resource_id = str(uuid.uuid4())
+        name = name or resource_id
+        return cls(resource_id=resource_id, name=name, content=content)
 
     @classmethod
     def get_by_id(cls, resource_id):
