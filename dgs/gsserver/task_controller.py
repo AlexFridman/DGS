@@ -5,7 +5,7 @@ from threading import Thread, Condition
 import mongoengine as me
 from celery.task.control import discard_all
 
-from dgs.gsserver.conf.conf import GSServerConf
+from dgs.gsserver.conf import conf
 from dgs.gsserver.db.gstask import GSTask, TaskState
 
 logging.basicConfig(level=logging.DEBUG)
@@ -17,7 +17,7 @@ class TaskNotFoundError(Exception):
 
 
 class TaskController(Thread):
-    cfg = GSServerConf.TaskController
+    cfg = conf.TaskController
 
     def __init__(self):
         super().__init__()

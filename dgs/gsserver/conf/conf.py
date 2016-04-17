@@ -51,14 +51,9 @@ class Master:
         self.port = port
 
 
-class TaskControllerConfig:
-    tick_interval = 1
-    wait_task_add_event = False
-
-
 class GSServerConf:
-    def __init__(self, mongo, celery, master):
+    def __init__(self, mongo, celery, master, task_controller):
         self.Mongo = mongo
         self.Celery = celery
         self.Master = master
-        self.TaskController = TaskControllerConfig
+        self.TaskController = task_controller
