@@ -84,3 +84,5 @@ class TaskController(Thread):
             elif self._wait_task_add_condition:
                 logging.debug('Waiting an event')
                 self._wait_for_task_add_event()
+            else:
+                time.sleep(self.tick_interval)
