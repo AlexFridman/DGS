@@ -12,7 +12,7 @@ from sklearn.grid_search import ParameterGrid
 
 from dgs.gsserver.celeryapp import run_subtask
 from dgs.gsserver.db.gsresource import GSResource
-from dgs.gsserver.errors import ResourceUnavailableError, ScriptParseError
+from dgs.gsserver.errors import ScriptParseError
 from dgs.gsserver.resource_controller import ResourceNotFoundError
 
 
@@ -106,8 +106,6 @@ class GSTask(me.Document):
 
     def __custom__init__(self, param_grid, script, resources=None, title=''):
         resources = resources or {}
-        if not GSResource.is_resources_available(resources.values()):
-            raise ResourceUnavailableError()
         task_id = str(uuid.uuid4())
         GSResource.lock_resources(task_id, resources.values())
         subtasks = [
@@ -126,8 +124,8 @@ class GSTask(me.Document):
     def create_from_script(cls, code, resources=None, title=''):
         script_errors = {}
         try:
-            resources = cls._get_resources(resources or {})
-            module_globals = {'resources': resources}
+            resource_contents = cls._get_resources(resources or {})
+            module_globals = {'resources': resource_contents}
             exec(code, {}, module_globals)
         except ResourceNotFoundError:
             raise
