@@ -134,7 +134,7 @@ class GSTask(me.Document):
             ex_type, ex, tb = sys.exc_info()
             script_errors['script'] = {
                 'ex_type': str(ex_type),
-                'ex_message': ex,
+                'ex_message': str(ex),
                 'traceback': ''.join(traceback.format_tb(tb))
             }
             raise ScriptParseError(script_errors)
@@ -142,13 +142,22 @@ class GSTask(me.Document):
             for param_name, (required, check_func, error_msg) in task_params.items():
                 param_in_module = param_name in module_globals
                 if not param_in_module and required:
-                    script_errors[param_name] = 'There is no {} in script'.format(param_name)
+                    script_errors[param_name] = {
+                        'ex_message': 'There is no {} in script'.format(param_name)
+                    }
                 elif param_in_module:
                     try:
                         if not check_func(module_globals[param_name]):
-                            script_errors[param_name] = error_msg
+                            script_errors[param_name] = {
+                                'ex_message': error_msg
+                            }
                     except Exception as e:
-                        script_errors[param_name] = str(e)
+                        ex_type, ex, tb = sys.exc_info()
+                        script_errors[param_name] = {
+                            'ex_type': str(ex_type),
+                            'ex_message': str(ex),
+                            'traceback': ''.join(traceback.format_tb(tb))
+                        }
 
             if script_errors:
                 raise ScriptParseError(script_errors)
@@ -183,19 +192,21 @@ class GSTask(me.Document):
                 'param_errors': self.param_errors, 'title': self.title}
 
     def update_state(self):
-        subtask_states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
+        states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
-            if TaskState.FAILED in subtask_states:
+            if TaskState.FAILED in states:
                 self.state = TaskState.FAILED
-            elif TaskState.RUNNING in subtask_states:
+            elif TaskState.IDLE in states:
+                self.state = TaskState.IDLE
+            elif TaskState.RUNNING in states:
                 self.state = TaskState.RUNNING
-            elif all(state == TaskState.SUCCESS for state in subtask_states):
+            else:
                 self.state = TaskState.SUCCESS
 
         if self.state in (TaskState.FAILED, TaskState.CANCELED):
             GSResource.unlock_resources(self.task_id, self.resources.values())
 
-        self.n_completed = sum(1 for state in subtask_states if state == TaskState.SUCCESS)
+        self.n_completed = sum(1 for state in states if state == TaskState.SUCCESS)
 
         start_times = [subtask.start_time for subtask in self.subtasks if subtask.start_time is not None]
         if start_times:
