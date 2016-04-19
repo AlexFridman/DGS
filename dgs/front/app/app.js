@@ -142,8 +142,8 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
             alert("Task added!");
         }, function errorCallback(response) {
             var message = 'Adding task failed';
-            for (e in response.data.message) {
-                message += '\n' + e + ': ' + response.data.message[e];
+            for (var e in response.data.message) {
+                message += '\n' + e + ': ' + response.data.message[e].ex_message;
             }
             alert(message);
         });
