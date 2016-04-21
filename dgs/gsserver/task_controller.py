@@ -3,8 +3,8 @@ import time
 from threading import Thread, Condition
 
 import mongoengine as me
-from celery.task.control import discard_all
 
+from celery.task.control import discard_all
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db.gstask import GSTask, TaskState
 
@@ -42,7 +42,7 @@ class TaskController(Thread):
 
     @staticmethod
     def get_tasks(sort='date', state=None, q='', offset=0, count=50):
-        tasks = GSTask.objects(title__icontains=q)
+        tasks = GSTask.objects(title__icontains=q).order_by('-start_time')
         if state and state != 'all':
             tasks = tasks.filter(state__iexact=state)
         total = tasks.clone().count()
