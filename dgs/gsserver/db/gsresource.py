@@ -35,7 +35,7 @@ class GSResource(me.Document):
 
     @property
     def is_locked(self):
-        return len(self.lockers) > 0
+        return bool(self.lockers)
 
     @classmethod
     def lock_resources(cls, locker_id, resource_ids):
