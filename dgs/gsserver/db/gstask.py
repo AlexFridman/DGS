@@ -103,7 +103,7 @@ class GSTask(me.Document):
     best_params = me.DictField()
     param_errors = me.DictField()
     note = me.StringField()
-    errors = me.ListField()
+    runtime_errors = me.ListField()
 
     def __custom__init__(self, param_grid, script, resources=None, title=''):
         resources = resources or {}
@@ -190,14 +190,15 @@ class GSTask(me.Document):
                 'end_time': self.end_time, 'actualize_date': self.actualize_date,
                 'n_subtasks': self.n_subtasks, 'n_completed': self.n_completed,
                 'best_score': self.best_score, 'best_params': self.best_params,
-                'param_errors': self.param_errors, 'title': self.title}
+                'param_errors': self.param_errors, 'title': self.title,
+                'runtime_errors': self.runtime_errors}
 
     def update_state(self):
         subtask_states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
             if TaskState.FAILED in subtask_states:
                 self.state = TaskState.FAILED
-                self.errors = list({subtask.error_info for subtask in self.subtasks if subtask.error_info})
+                self.runtime_errors = list({subtask.error_info for subtask in self.subtasks if subtask.error_info})
             elif TaskState.RUNNING in subtask_states:
                 self.state = TaskState.RUNNING
             elif all(state == TaskState.SUCCESS for state in subtask_states):
