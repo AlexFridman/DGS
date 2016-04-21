@@ -76,7 +76,7 @@ class GSSubtask(me.Document):
             self.stack_trace = {
                 'ex_type': str(ex_type),
                 'ex_message': ex,
-                'traceback': ''.join(traceback.format_tb(tb)[4:])
+                'traceback': ''.join(traceback.format_tb(tb))
             }
         finally:
             if success:
