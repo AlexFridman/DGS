@@ -104,7 +104,7 @@ class GSTask(me.Document):
     end_time = me.DateTimeField()
     actualize_date = me.DateTimeField()
     n_subtasks = me.IntField()
-    n_completed = me.IntField()
+    n_completed = me.IntField(default=0)
     best_score = me.FloatField()
     best_params = me.DictField()
     param_errors = me.DictField()
