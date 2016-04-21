@@ -75,7 +75,7 @@ class GSSubtask(me.Document):
             ex_type, ex, tb = sys.exc_info()
             self.stack_trace = {
                 'ex_type': str(ex_type),
-                'ex_message': ex,
+                'ex_message': str(ex),
                 'traceback': ''.join(traceback.format_tb(tb))
             }
         finally:
