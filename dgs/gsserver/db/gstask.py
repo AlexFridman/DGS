@@ -12,7 +12,7 @@ from sklearn.grid_search import ParameterGrid
 
 from dgs.gsserver.celeryapp import run_subtask
 from dgs.gsserver.db.gsresource import GSResource
-from dgs.gsserver.errors import ScriptParseError
+from dgs.gsserver.errors import ScriptParseError, TaskStateError
 from dgs.gsserver.resource_controller import ResourceNotFoundError
 
 
@@ -251,6 +251,8 @@ class GSTask(me.Document):
         self.save()
 
     def cancel(self):
+        if self.state not in (TaskState.IDLE, TaskState.PENDING, TaskState.RUNNING):
+            raise TaskStateError('Cannot cancel task with {} state'.format(self.state))
         self.state = TaskState.CANCELED
         GSResource.unlock_resources(self.task_id, self.resources.values())
         self.save()

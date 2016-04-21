@@ -15,3 +15,8 @@ class ScriptParseError(Exception):
 class SearchRequestError(Exception):
     def __init__(self, errors):
         self.errors = errors
+
+
+class TaskStateError(Exception):
+    def __init__(self, message):
+        self.errors = message
