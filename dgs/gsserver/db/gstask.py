@@ -46,6 +46,13 @@ class GSSubtask(me.Document):
     state = me.StringField()
     error_info = me.DictField()
 
+    @classmethod
+    def get_by_id(cls, subtask_id):
+        try:
+            return GSSubtask.objects.get(subtask_id=subtask_id)
+        except me.DoesNotExist:
+            pass
+
     @property
     def parent_task(self):
         return GSTask.get_by_id(self.parent_task_id)
@@ -90,7 +97,7 @@ class GSSubtask(me.Document):
 class GSTask(me.Document):
     task_id = me.StringField(primary_key=True)
     title = me.StringField()
-    subtasks = me.ListField(me.ReferenceField(GSSubtask, reverse_delete_rule=me.NULLIFY))
+    subtask_ids = me.ListField()
     resources = me.DictField()
     state = me.StringField()
     script = me.StringField()
@@ -112,8 +119,9 @@ class GSTask(me.Document):
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
             param_comb in ParameterGrid(param_grid)]
+        subtask_ids = [subtask.subtask_id for subtask in subtasks]
         GSSubtask.objects.insert(subtasks)
-        super().__init__(task_id=task_id, title=title, script=script, subtasks=subtasks, n_subtasks=len(subtasks),
+        super().__init__(task_id=task_id, title=title, script=script, subtasks=subtask_ids, n_subtasks=len(subtasks),
                          resources=resources)
         return self
 
@@ -197,17 +205,23 @@ class GSTask(me.Document):
         unique_errors = {(subtask.error_info['ex_type'],
                           subtask.error_info['ex_message'],
                           subtask.error_info['traceback']) for subtask
-                         in self.subtasks if subtask.error_info}
+                         in self.get_subtasks() if subtask.error_info}
         return [{'ex_type': ex_type, 'ex_message': ex_message, 'traceback': traceback} for
                 ex_type, ex_message, traceback in unique_errors]
 
+    def get_subtasks(self):
+        # TODO: replace with parent task id
+        return [GSSubtask.get_by_id(subtask_id) for subtask_id in self.subtask_ids]
+
     def update_state(self):
-        subtask_states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
+        subtasks = self.get_subtasks()
+        subtask_states = [subtask.state for subtask in subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
             if TaskState.FAILED in subtask_states:
                 self.state = TaskState.FAILED
                 self.runtime_errors = self._get_unique_runtime_errors()
-            elif TaskState.RUNNING in subtask_states:
+            elif TaskState.RUNNING in subtask_states or all(
+                            state in subtask_states for state in (TaskState.IDLE, TaskState.SUCCESS)):
                 self.state = TaskState.RUNNING
             elif all(state == TaskState.SUCCESS for state in subtask_states):
                 self.state = TaskState.SUCCESS
@@ -217,21 +231,21 @@ class GSTask(me.Document):
 
         self.n_completed = sum(1 for state in subtask_states if state == TaskState.SUCCESS)
 
-        start_times = [subtask.start_time for subtask in self.subtasks if subtask.start_time is not None]
+        start_times = [subtask.start_time for subtask in subtasks if subtask.start_time is not None]
         if start_times:
             self.start_time = min(start_times)
 
-        end_times = [subtask.end_time for subtask in self.subtasks if subtask.state == TaskState.SUCCESS \
+        end_times = [subtask.end_time for subtask in subtasks if subtask.state == TaskState.SUCCESS \
                      and subtask.end_time is not None]
         if end_times:
             self.end_time = max(end_times)
 
         self.actualize_date = datetime.datetime.now()
 
-        scores = [subtask.score for subtask in self.subtasks if subtask.state == TaskState.SUCCESS]
+        scores = [subtask.score for subtask in subtasks if subtask.state == TaskState.SUCCESS]
         if scores:
             self.best_score = max(scores)
-            self.best_params = [subtask.params for subtask in self.subtasks if subtask.score == self.best_score][0]
+            self.best_params = [subtask.params for subtask in subtasks if subtask.score == self.best_score][0]
 
         self.save()
 
@@ -248,7 +262,7 @@ class GSTask(me.Document):
         self.state = TaskState.PENDING
         self.save()
 
-        for subtask in self.subtasks:
+        for subtask in self.get_subtasks():
             result = run_subtask.delay(subtask.subtask_id)
             subtask.celery_task_id = result.id
             subtask.save()
