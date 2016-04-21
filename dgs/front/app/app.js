@@ -62,6 +62,17 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
         });
     };
 
+    $scope.cancel = function (task_id) {
+        $http({
+            method: 'GET',
+            url: 'http://localhost:5000/cancel/' + task_id
+        }).then(function successCallback(response) {
+            alert('Task cancelled!');
+        }, function errorCallback(response) {
+            alert("Error");
+        });
+    };
+
 
     $scope.update();
 

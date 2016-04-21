@@ -31,7 +31,7 @@
                     </dd>
                 </dl>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <dl>
                     <dt>
                         Tasks completed
@@ -40,6 +40,9 @@
                         {{item.n_completed}} of {{item.n_subtasks}}
                     </dd>
                 </dl>
+            </div>
+            <div class="col-md-1" ng-click="cancel(item.task_id)">
+                <button>Cancel</button>
             </div>
         </div>
         <div class="row">
