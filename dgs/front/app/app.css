@@ -33,10 +33,10 @@
     transform: none;
 }
 
-.top-buffer {
-    padding-top: 20px;
-}
-
 .monospace-code {
     font-family: monospace;
+}
+
+#table-margin-top {
+    margin-top: 20px;
 }
