@@ -41,7 +41,7 @@
                     </dd>
                 </dl>
             </div>
-            <div class="col-md-1" ng-click="cancel(item.task_id)">
+            <div class="col-md-1" ng-click="cancel(item.task_id)" ng-hide="!canCancel(item.state)">
                 <button>Cancel</button>
             </div>
         </div>

@@ -69,9 +69,13 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
         }).then(function successCallback(response) {
             alert('Task cancelled!');
         }, function errorCallback(response) {
-            alert("Error");
+            alert('Error');
         });
     };
+
+    $scope.canCancel = function (state) {
+        return state == 'Idle' || state == 'Pending' || state == 'Running';
+    }
 
 
     $scope.update();
