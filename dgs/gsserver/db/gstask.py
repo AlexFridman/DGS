@@ -44,7 +44,7 @@ class GSSubtask(me.Document):
     params = me.DictField()
     score = me.FloatField()
     state = me.StringField()
-    stack_trace = me.DictField()
+    error_info = me.DictField()
 
     @property
     def parent_task(self):
@@ -73,7 +73,7 @@ class GSSubtask(me.Document):
             success = True
         except Exception as e:
             ex_type, ex, tb = sys.exc_info()
-            self.stack_trace = {
+            self.error_info = {
                 'ex_type': str(ex_type),
                 'ex_message': str(ex),
                 'traceback': ''.join(traceback.format_tb(tb))
