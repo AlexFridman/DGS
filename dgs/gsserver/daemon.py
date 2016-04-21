@@ -12,7 +12,7 @@ from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
 from dgs.gsserver.db.gstask import GSTask, TaskState
-from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError
+from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError, TaskStateError
 from dgs.gsserver.resource_controller import ResourceController
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
@@ -29,6 +29,8 @@ def cancel(task_id):
         TaskController.cancel_task(task_id)
     except TaskNotFoundError as e:
         return json_response({'message': 'task not found'}, status_code=400)
+    except TaskStateError as e:
+        return json_response({'message': e.message}, status_code=400)
     else:
         return json_response({'message': 'ok'}, status_code=200)
 
@@ -56,7 +58,7 @@ def add():
         resources = args.get('resources', {})
         resource_ids = resources.values()
         title = args.get('title', '')
-        # TODO: probably, shoul be moved elsewhere
+        # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
         task = GSTask.create_from_script(data, resources, title)
         resource_controller.lock_resources(task.task_id, resource_ids)
