@@ -63,7 +63,7 @@ class GSSubtask(me.Document):
     def execute(self):
         if self.state == TaskState.CANCELED:
             return
-        if self.parent_task.state == TaskState.CANCELED:
+        if self.parent_task.state in (TaskState.CANCELED, TaskState.FAILED):
             return
         success = False
         self.state = TaskState.RUNNING
@@ -97,7 +97,6 @@ class GSSubtask(me.Document):
 class GSTask(me.Document):
     task_id = me.StringField(primary_key=True)
     title = me.StringField()
-    subtask_ids = me.ListField()
     resources = me.DictField()
     state = me.StringField()
     script = me.StringField()
@@ -119,9 +118,8 @@ class GSTask(me.Document):
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
             param_comb in ParameterGrid(param_grid)]
-        subtask_ids = [subtask.subtask_id for subtask in subtasks]
         GSSubtask.objects.insert(subtasks)
-        super().__init__(task_id=task_id, title=title, script=script, subtask_ids=subtask_ids, n_subtasks=len(subtasks),
+        super().__init__(task_id=task_id, title=title, script=script, n_subtasks=len(subtasks),
                          resources=resources)
         return self
 
@@ -210,8 +208,7 @@ class GSTask(me.Document):
                 ex_type, ex_message, traceback in unique_errors]
 
     def get_subtasks(self):
-        # TODO: replace with parent task id
-        return [GSSubtask.get_by_id(subtask_id) for subtask_id in self.subtask_ids]
+        return GSSubtask.objects(parent_task_id=self.task_id)
 
     def update_state(self):
         subtasks = self.get_subtasks()
@@ -226,7 +223,7 @@ class GSTask(me.Document):
             elif all(state == TaskState.SUCCESS for state in subtask_states):
                 self.state = TaskState.SUCCESS
 
-        if self.state in (TaskState.FAILED, TaskState.CANCELED):
+        if self.state in (TaskState.FAILED, TaskState.CANCELED, TaskState.SUCCESS):
             GSResource.unlock_resources(self.task_id, self.resources.values())
 
         self.n_completed = sum(1 for state in subtask_states if state == TaskState.SUCCESS)
