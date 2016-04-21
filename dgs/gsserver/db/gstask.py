@@ -194,9 +194,10 @@ class GSTask(me.Document):
                 'runtime_errors': self.runtime_errors}
 
     def _get_unique_runtime_errors(self):
-        unique_errors = list(
-            {(subtask.error_info['ex_type'], subtask.error_info['ex_message'], subtask.error_info['traceback']) for
-             subtask in self.subtasks if subtask.error_info})
+        unique_errors = {(subtask.error_info['ex_type'],
+                          subtask.error_info['ex_message'],
+                          subtask.error_info['traceback']) for subtask
+                         in self.subtasks if subtask.error_info}
         return [{'ex_type': ex_type, 'ex_message': ex_message, 'traceback': traceback} for
                 ex_type, ex_message, traceback in unique_errors]
 
