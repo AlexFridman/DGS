@@ -32,3 +32,7 @@
 .modal.in .modal-dialog {
     transform: none;
 }
+
+.top-buffer {
+    padding-top: 20px;
+}

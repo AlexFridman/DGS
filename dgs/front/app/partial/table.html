@@ -1,29 +1,68 @@
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>State</th>
-        <th>Start time</th>
-        <th>End time</th>
-        <th>Subtasks</th>
-        <th>Completed</th>
-        <th>Done</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr ng-repeat="item in list.items">
-        <td ng-switch="item.state">
-            <span ng-switch-when="IDLE" class="label label-default">IDLE</span>
-            <span ng-switch-when="RUNNING" class="label label-primary">RUNNING</span>
-            <span ng-switch-when="SUCCESS" class="label label-success">SUCCESS</span>
-            <span ng-switch-when="PENDING" class="label label-info">PENDING</span>
-            <span ng-switch-when="CANCELED" class="label label-warning">CANCELED</span>
-            <span ng-switch-when="FAILED" class="label label-danger">FAILED</span>
-        </td>
-        <td>{{item.start_time}}</td>
-        <td>{{item.end_time}}</td>
-        <td>{{item.n_subtasks}}</td>
-        <td>{{item.n_completed}}</td>
-        <td><input type="checkbox" ng-model="item.done"/></td>
-    </tr>
-    </tbody>
-</table>
+<div class="list-group">
+    <div ng-repeat="item in list.items" class="list-group-item">
+        <div class="row">
+            <div class="col-md-1">
+                <div ng-switch="item.state">
+                    <span ng-switch-when="IDLE" class="label label-default">IDLE</span>
+                    <span ng-switch-when="RUNNING" class="label label-primary">RUNNING</span>
+                    <span ng-switch-when="SUCCESS" class="label label-success">SUCCESS</span>
+                    <span ng-switch-when="PENDING" class="label label-info">PENDING</span>
+                    <span ng-switch-when="CANCELED" class="label label-warning">CANCELED</span>
+                    <span ng-switch-when="FAILED" class="label label-danger">FAILED</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>
+                        Start time
+                    </dt>
+                    <dd>
+                        {{item.start_time}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-4">
+                <dl>
+                    <dt>
+                        End time
+                    </dt>
+                    <dd>
+                        {{item.end_time}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-3">
+                <dl>
+                    <dt>
+                        Tasks completed
+                    </dt>
+                    <dd>
+                        {{item.n_completed}} of {{item.n_subtasks}}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <p>
+                    <a class="btn" href="#" ng-click="isCollapsed[item.task_id] = !isCollapsed[item.task_id]">View
+                        details</a>
+                </p>
+            </div>
+            <!--<div class="col-md-10">
+                <uib-progressbar max="item.n_subtasks" value="item.n_completed" type="success"><span style="color:white; white-space:nowrap;">{{item.n_completed}} / {{item.n_subtasks}}</span></uib-progressbar>
+            </div>-->
+        </div>
+        <div uib-collapse="!isCollapsed[item.task_id]">
+            <div class="well well-lg">
+                <p>Actualize date: {{item.actualize_date}}</p>
+
+                <p>Best score: {{item.best_score}}</p>
+
+                <p>Best params: {{item.best_params}}</p>
+
+                <p>Param errors: {{item.param_errors}}</p>
+            </div>
+        </div>
+    </div>
+</div>

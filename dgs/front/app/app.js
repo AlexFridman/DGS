@@ -6,6 +6,8 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
         items: []
     };
 
+    $scope.isCollapsed = {};
+
     $scope.options = {
         state: [
             'All',
