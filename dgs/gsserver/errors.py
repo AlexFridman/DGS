@@ -19,4 +19,4 @@ class SearchRequestError(Exception):
 
 class TaskStateError(Exception):
     def __init__(self, message):
-        self.errors = message
+        self.message = message
