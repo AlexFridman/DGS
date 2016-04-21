@@ -36,3 +36,7 @@
 .top-buffer {
     padding-top: 20px;
 }
+
+.monospace-code {
+    font-family: monospace;
+}

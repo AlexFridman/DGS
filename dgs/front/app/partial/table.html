@@ -55,13 +55,27 @@
         </div>
         <div uib-collapse="!isCollapsed[item.task_id]">
             <div class="well well-lg">
-                <p>Actualize date: {{item.actualize_date}}</p>
+                <p><b>Actualize date:</b> {{item.actualize_date}}</p>
 
-                <p>Best score: {{item.best_score}}</p>
+                <p><b>Best score:</b> {{item.best_score}}</p>
 
-                <p>Best params: {{item.best_params}}</p>
+                <p><b>Best params:</b> {{item.best_params}}</p>
 
-                <p>Param errors: {{item.param_errors}}</p>
+                <p><b>Param errors:</b> {{item.param_errors}}</p>
+
+                <p><b>Runtime errors:</b></p>
+                <p>
+                <div ng-repeat="error_info in item.runtime_errors">
+                    Type:
+                    <div class="monospace-code">{{error_info.ex_type}}</div>
+                    <br>
+                    Message:
+                    <div class="monospace-code">{{error_info.ex_message}}</div>
+                    <br>
+                    Traceback: <br>
+                    <pre><div class="monospace-code">{{error_info.traceback}}</div></pre>
+                </div>
+                </p>
             </div>
         </div>
     </div>
