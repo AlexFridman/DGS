@@ -193,12 +193,19 @@ class GSTask(me.Document):
                 'param_errors': self.param_errors, 'title': self.title,
                 'runtime_errors': self.runtime_errors}
 
+    def _get_unique_runtime_errors(self):
+        unique_errors = list(
+            {(subtask.error_info['ex_type'], subtask.error_info['ex_message'], subtask.error_info['traceback']) for
+             subtask in self.subtasks if subtask.error_info})
+        return [{'ex_type': ex_type, 'ex_message': ex_message, 'traceback': traceback} for
+                ex_type, ex_message, traceback in unique_errors]
+
     def update_state(self):
         subtask_states = [subtask.state for subtask in self.subtasks if subtask.state is not None]
         if self.state != TaskState.CANCELED:
             if TaskState.FAILED in subtask_states:
                 self.state = TaskState.FAILED
-                self.runtime_errors = list({subtask.error_info for subtask in self.subtasks if subtask.error_info})
+                self.runtime_errors = self._get_unique_runtime_errors()
             elif TaskState.RUNNING in subtask_states:
                 self.state = TaskState.RUNNING
             elif all(state == TaskState.SUCCESS for state in subtask_states):
