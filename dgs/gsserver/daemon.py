@@ -1,6 +1,8 @@
 import logging
 import re
 import uuid
+import json
+from json.decoder import JSONDecodeError
 
 import chardet
 from flask import Flask
@@ -55,9 +57,12 @@ def add():
         if not encoding:
             return json_response({'message': 'Invalid encoding'}, status_code=400)
         data = data.decode(encoding['encoding'])
+        args = json.loads(data)
+
         resources = args.get('resources', {})
         resource_ids = resources.values()
         title = args.get('title', '')
+        data = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
         task = GSTask.create_from_script(data, resources, title)
@@ -66,6 +71,8 @@ def add():
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
         return json_response({'message': 'Some resources are unavailable'}, status_code=400)
+    except JSONDecodeError as e:
+        return json_response({'message': 'Data is not in json format'}, status_code=400)
     else:
         task_controller.add_task(task)
         return json_response({'message': 'ok'}, status_code=200)
