@@ -75,7 +75,7 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
 
     $scope.canCancel = function (state) {
         return state == 'Idle' || state == 'Pending' || state == 'Running';
-    }
+    };
 
 
     $scope.update();
@@ -135,35 +135,28 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
     $scope.doAddTask = function () {
         var reader = new FileReader();
         reader.onload = function (e) {
+            $http({
+                method: 'POST',
+                url: 'http://localhost:5000/add',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                data: {
+                    file: reader.result,
+                    title: $scope.formParams.title
+                }
+            }).then(function successCallback(response) {
+                alert("Task added!");
+            }, function errorCallback(response) {
+                var message = 'Adding task failed';
+                for (var e in response.data.message) {
+                    message += '\n' + e + ': ' + response.data.message[e].ex_message;
+                }
+                alert(message);
+            });
         };
-        reader.readAsDataURL($scope.formParams.file);
-
-        $http({
-            method: 'POST',
-            url: 'http://localhost:5000/add',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            data: $scope.formParams.file, /*{
-             file: e.target.result,
-             title: $scope.formParams.title
-             }/*,
-            transformRequest: function (data) {
-                var formData = new FormData();
-                formData.append("title", angular.toJson($scope.formParams.title));
-             formData.append("file", e.target.result);
-             return formData;
-             }*/
-        }).then(function successCallback(response) {
-            alert("Task added!");
-        }, function errorCallback(response) {
-            var message = 'Adding task failed';
-            for (var e in response.data.message) {
-                message += '\n' + e + ': ' + response.data.message[e].ex_message;
-            }
-            alert(message);
-        });
+        reader.readAsText($scope.formParams.file)
     };
 
     $scope.addTask = function () {
