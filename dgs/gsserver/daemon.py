@@ -15,7 +15,8 @@ from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
 from dgs.gsserver.db.gsresource import GSResource
 from dgs.gsserver.db.gstask import GSTask, TaskState
-from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError, TaskStateError
+from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError, TaskStateError, \
+    ResourceNotFoundError
 from dgs.gsserver.resource_controller import ResourceController
 from dgs.gsserver.task_controller import TaskController
 from dgs.gsserver.task_controller import TaskNotFoundError
@@ -160,7 +161,12 @@ def resource_info():
 @app.route('/delete_resource/<resource_id>')
 @cross_origin()
 def delete_resource(resource_id):
-    pass
+    try:
+        resource_controller.schedule_resource_deletion(resource_id)
+    except ResourceNotFoundError:
+        return json_response({'message': 'resource not found'}, status_code=400)
+    else:
+        return json_response({'message': 'ok'}, status_code=200)
 
 
 def entry_point():
