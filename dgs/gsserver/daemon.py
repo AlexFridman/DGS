@@ -127,17 +127,6 @@ def task_info():
         return json_response({'tasks': {'count': total, 'items': items}})
 
 
-def run_master():
-    init_celery_app(conf.Celery.conf)
-    init_mongodb(conf.Mongo.connection)
-    task_controller.start()
-
-    try:
-        app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
-    except:
-        logging.exception('error while starting flask server, shutting down')
-
-
 @app.route('/add_resource')
 @cross_origin()
 def add_resource():
@@ -170,6 +159,17 @@ def delete_resource(resource_id):
         return json_response({'message': 'resource not found'}, status_code=400)
     else:
         return json_response({'message': 'ok'})
+
+
+def run_master():
+    init_celery_app(conf.Celery.conf)
+    init_mongodb(conf.Mongo.connection)
+    task_controller.start()
+
+    try:
+        app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
+    except:
+        logging.exception('error while starting flask server, shutting down')
 
 
 def entry_point():
