@@ -14,10 +14,10 @@ class GSResource(me.Document):
     size = me.IntField()
 
     @classmethod
-    def create(cls, content, name=None):
+    def create(cls, content, title=None):
         resource_id = str(uuid.uuid4())
-        name = name or resource_id
-        return cls(resource_id=resource_id, name=name, content=content, size=len(content))
+        title = title or resource_id
+        return cls(resource_id=resource_id, title=title, content=content, size=len(content))
 
     @classmethod
     def get_by_id(cls, resource_id):
