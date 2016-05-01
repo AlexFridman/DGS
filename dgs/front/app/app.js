@@ -156,7 +156,7 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
                 alert(message);
             });
         };
-        reader.readAsText($scope.formParams.file)
+        reader.readAsText($scope.formParams.file, 'utf-8'); // input file must be in utf-8
     };
 
     $scope.addTask = function () {
