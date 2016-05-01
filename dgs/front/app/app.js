@@ -1,7 +1,7 @@
 'use strict';
 
-var taskApp = angular.module("taskApp", ['ui.bootstrap']);
-taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
+var taskApp = angular.module('taskApp', ['ui.bootstrap']);
+taskApp.controller('taskController', function ($scope, $http, $interval, $log) {
     $scope.list = {
         items: []
     };
@@ -84,7 +84,7 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
 
 
 });
-taskApp.controller("createFormController", function ($scope, $uibModal, $log) {
+taskApp.controller('createFormController', function ($scope, $uibModal, $log) {
 
     $scope.items = ['item1', 'item2', 'item3'];
 
@@ -147,7 +147,7 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
                     title: $scope.formParams.title
                 }
             }).then(function successCallback(response) {
-                alert("Task added!");
+                alert('Task added!');
             }, function errorCallback(response) {
                 var message = 'Adding task failed';
                 for (var e in response.data.message) {
