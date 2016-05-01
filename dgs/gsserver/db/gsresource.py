@@ -11,12 +11,13 @@ class GSResource(me.Document):
     content = me.BinaryField()
     is_deletion_requested = me.BooleanField(default=False)
     lockers = me.ListField()
+    size = me.IntField()
 
     @classmethod
     def create(cls, content, name=None):
         resource_id = str(uuid.uuid4())
         name = name or resource_id
-        return cls(resource_id=resource_id, name=name, content=content)
+        return cls(resource_id=resource_id, name=name, content=content, size=len(content))
 
     @classmethod
     def get_by_id(cls, resource_id):
