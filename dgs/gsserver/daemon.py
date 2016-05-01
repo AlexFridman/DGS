@@ -114,9 +114,9 @@ def validate_search_params(raw_params):
     return params
 
 
-@app.route('/info')
+@app.route('/task_info')
 @cross_origin()
-def info():
+def task_info():
     args = request.args
     search_params = {
         'sort': args.get('sort', 'date').lower(),

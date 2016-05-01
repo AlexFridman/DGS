@@ -53,7 +53,7 @@ taskApp.controller("taskController", function ($scope, $http, $interval, $log) {
     $scope.update = function () {
         $http({
             method: 'GET',
-            url: 'http://localhost:5000/info',
+            url: 'http://localhost:5000/task_info',
             params: $scope.params
         }).then(function successCallback(response) {
             $scope.list = response.data.tasks
