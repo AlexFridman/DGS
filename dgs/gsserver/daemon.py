@@ -48,7 +48,6 @@ def cancel_all():
 @app.route('/add_task', methods=['POST'])
 @cross_origin()
 def add_task():
-    args = request.args
     temp_locker = uuid.uuid4()
     resource_ids = None
     try:
