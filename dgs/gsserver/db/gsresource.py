@@ -7,7 +7,7 @@ from dgs.gsserver.errors import ResourceUnavailableError
 
 class GSResource(me.Document):
     resource_id = me.StringField(primary_key=True)
-    name = me.StringField(default=resource_id)
+    title = me.StringField(default=resource_id)
     content = me.BinaryField()
     is_deletion_requested = me.BooleanField(default=False)
     lockers = me.ListField()
