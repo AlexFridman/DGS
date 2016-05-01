@@ -137,7 +137,7 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
         reader.onload = function (e) {
             $http({
                 method: 'POST',
-                url: 'http://localhost:5000/add',
+                url: 'http://localhost:5000/add_task',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'

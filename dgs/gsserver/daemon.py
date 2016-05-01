@@ -45,9 +45,9 @@ def cancel_all():
     return json_response({'message': 'ok'}, status_code=200)
 
 
-@app.route('/add', methods=['POST'])
+@app.route('/add_task', methods=['POST'])
 @cross_origin()
-def add():
+def add_task():
     args = request.args
     temp_locker = uuid.uuid4()
     resource_ids = None
