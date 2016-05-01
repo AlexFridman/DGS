@@ -1,7 +1,7 @@
+import json
 import logging
 import re
 import uuid
-import json
 from json.decoder import JSONDecodeError
 
 import chardet
@@ -13,6 +13,7 @@ from flask.ext.responses import json_response
 from dgs.gsserver.celeryapp import init_celery_app
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db import init_mongodb
+from dgs.gsserver.db.gsresource import GSResource
 from dgs.gsserver.db.gstask import GSTask, TaskState
 from dgs.gsserver.errors import ScriptParseError, ResourceUnavailableError, SearchRequestError, TaskStateError
 from dgs.gsserver.resource_controller import ResourceController
@@ -78,7 +79,7 @@ def add():
         return json_response({'message': 'ok'}, status_code=200)
     finally:
         if resource_ids:
-            resource_controller.unlock_resources(temp_locker, resource_ids)
+            GSResource.unlock_resources(temp_locker, resource_ids)
 
 
 def validate_search_params(raw_params):
