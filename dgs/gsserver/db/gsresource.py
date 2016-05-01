@@ -62,3 +62,8 @@ class GSResource(me.Document):
                     resource.save()
         else:
             raise ResourceUnavailableError()
+
+    def to_json(self):
+        return {'resource_id': self.resource_id, 'title': self.title,
+                'size': self.size, 'is_locked': self.is_locked,
+                'lockers': self.lockers, 'is_deletion_requested': self.is_deletion_requested}
