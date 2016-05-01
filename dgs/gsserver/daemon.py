@@ -1,10 +1,8 @@
-import json
 import logging
 import re
 import uuid
 from json.decoder import JSONDecodeError
 
-import chardet
 from flask import Flask
 from flask import request
 from flask.ext.cors import cross_origin
@@ -52,13 +50,7 @@ def add_task():
     temp_locker = uuid.uuid4()
     resource_ids = None
     try:
-        data = request.data
-
-        encoding = chardet.detect(data)
-        if not encoding:
-            return json_response({'message': 'Invalid encoding'}, status_code=400)
-        data = data.decode(encoding['encoding'])
-        args = json.loads(data)
+        args = request.json
 
         resources = args.get('resources', {})
         resource_ids = resources.values()
