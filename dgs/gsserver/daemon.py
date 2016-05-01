@@ -34,14 +34,14 @@ def cancel(task_id):
     except TaskStateError as e:
         return json_response({'message': e.message}, status_code=400)
     else:
-        return json_response({'message': 'ok'}, status_code=200)
+        return json_response({'message': 'ok'})
 
 
 @app.route('/cancel_all')
 @cross_origin()
 def cancel_all():
     task_controller.cancel_all_tasks()
-    return json_response({'message': 'ok'}, status_code=200)
+    return json_response({'message': 'ok'})
 
 
 @app.route('/add_task', methods=['POST'])
@@ -68,7 +68,7 @@ def add_task():
         return json_response({'message': 'Data is not in json format'}, status_code=400)
     else:
         task_controller.add_task(task)
-        return json_response({'message': 'ok'}, status_code=200)
+        return json_response({'message': 'ok'})
     finally:
         if resource_ids:
             GSResource.unlock_resources(temp_locker, resource_ids)
@@ -124,7 +124,7 @@ def task_info():
         return json_response({'errors': e.errors})
     else:
         total, items = TaskController.get_tasks(**params)
-        return json_response({'tasks': {'count': total, 'items': items}}, status_code=200)
+        return json_response({'tasks': {'count': total, 'items': items}})
 
 
 def run_master():
@@ -169,7 +169,7 @@ def delete_resource(resource_id):
     except ResourceNotFoundError:
         return json_response({'message': 'resource not found'}, status_code=400)
     else:
-        return json_response({'message': 'ok'}, status_code=200)
+        return json_response({'message': 'ok'})
 
 
 def entry_point():
