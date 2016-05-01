@@ -141,7 +141,18 @@ def run_master():
 @app.route('/add_resource')
 @cross_origin()
 def add_resource():
-    pass
+    args = request.json
+
+    content = args.get('file')
+    if not content:
+        return json_response({'message': 'can not add an empty resource'}, status_code=400)
+    resource = GSResource.create(content, args.get('title'))
+    try:
+        resource_controller.add_resource(resource)
+    except Exception as e:
+        return json_response({'message': str(e)})
+    else:
+        return json_response({'message': 'ok'})
 
 
 @app.route('/resource_info')
