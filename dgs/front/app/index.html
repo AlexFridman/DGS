@@ -23,22 +23,16 @@
 <body>
 
 
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-10">
             <div ng-include="'partial/navbar.html'"></div>
-            <div ng-controller="resourceController">
-                <div ng-include="'partial/resources.html'"></div>
-            </div>
-            <div ng-controller="taskController">
-                <div ng-include="'partial/search-form.html'"></div>
-                <div ng-include="'partial/table.html'"></div>
-            </div>
+            <ng-view></ng-view>
         </div>
         <div class="col-md-1"></div>
     </div>
-
 </div>
 
 

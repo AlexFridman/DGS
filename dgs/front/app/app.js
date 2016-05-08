@@ -1,6 +1,27 @@
 'use strict';
 
-var taskApp = angular.module('taskApp', ['ui.bootstrap']);
+var taskApp = angular.module('taskApp', ['ui.bootstrap', 'ngRoute']);
+
+taskApp.config(['$routeProvider', function ($routeProvider) {
+    $routeProvider.when('/tasks', {
+        templateUrl: 'partial/tasks.html',
+        controller: 'taskController'
+    }).when('/resources', {
+        templateUrl: 'partial/resources.html',
+        controller: 'resourceController'
+    }).otherwise({
+        redirectTo: '/tasks'
+    });
+}]);
+
+taskApp.controller('navbarController', function ($scope, $location) {
+
+    $scope.isActive = function (viewLocation) {
+        return viewLocation === $location.path();
+    };
+
+});
+
 taskApp.controller('taskController', function ($scope, $http, $interval, $log) {
     $scope.list = {
         items: []
