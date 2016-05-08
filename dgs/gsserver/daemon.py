@@ -6,7 +6,6 @@ from json.decoder import JSONDecodeError
 from flask import Flask
 from flask import request
 from flask.ext.cors import cross_origin
-
 from flask.ext.responses import json_response
 
 from dgs.gsserver.celeryapp import init_celery_app
@@ -50,6 +49,7 @@ def cancel_all():
 def add_task():
     temp_locker = uuid.uuid4()
     resource_ids = None
+    is_successfully_created = False
     try:
         args = request.json
 
@@ -59,8 +59,8 @@ def add_task():
         script = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
-        task = GSTask.create_from_script(script, resources, title)
-        resource_controller.lock_resources(task.task_id, resource_ids)
+        task = GSTask.create_from_script(script, resources, title=title, task_id=str(temp_locker))
+        is_successfully_created = True
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
@@ -71,7 +71,7 @@ def add_task():
         task_controller.add_task(task)
         return json_response({'message': 'ok'})
     finally:
-        if resource_ids:
+        if resource_ids and not is_successfully_created:
             GSResource.unlock_resources(temp_locker, resource_ids)
 
 

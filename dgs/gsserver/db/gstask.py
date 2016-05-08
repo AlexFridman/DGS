@@ -111,9 +111,9 @@ class GSTask(me.Document):
     note = me.StringField()
     runtime_errors = me.ListField()
 
-    def __custom__init__(self, param_grid, script, resources=None, title=''):
+    def __custom__init__(self, param_grid, script, resources=None, title='', task_id=None):
         resources = resources or {}
-        task_id = str(uuid.uuid4())
+        task_id = task_id or str(uuid.uuid4())
         GSResource.lock_resources(task_id, resources.values())
         subtasks = [
             GSSubtask(subtask_id=str(uuid.uuid4()), state=TaskState.IDLE, params=param_comb, parent_task_id=task_id) for
@@ -124,12 +124,12 @@ class GSTask(me.Document):
         return self
 
     @classmethod
-    def create(cls, param_grid, script, resources=None, title=''):
-        return cls().__custom__init__(param_grid, script, resources, title)
+    def create(cls, param_grid, script, resources=None, title='', task_id=None):
+        return cls().__custom__init__(param_grid, script, resources, title=title, task_id=task_id)
 
     # TODO: test it
     @classmethod
-    def create_from_script(cls, code, resources=None, title=''):
+    def create_from_script(cls, code, resources=None, title='', task_id=None):
         script_errors = {}
         try:
             resource_contents = cls._get_resources(resources or {})
@@ -169,7 +169,7 @@ class GSTask(me.Document):
             if script_errors:
                 raise ScriptParseError(script_errors)
 
-            return GSTask.create(module_globals['param_grid'], code, resources, title)
+            return GSTask.create(module_globals['param_grid'], code, resources, title=title, task_id=task_id)
 
     def get_resources(self):
         return self._get_resources(self.resources)
