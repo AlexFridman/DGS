@@ -74,25 +74,14 @@ def add_task():
             GSResource.unlock_resources(temp_locker, resource_ids)
 
 
-def validate_search_params(raw_params):
-    params_validators_transformers = {
-        'sort': (lambda x: True, None, None),
-        'q': (None, None, None),
-        'state': (lambda x: x in vars(TaskState), None, 'No such state'),
-        'offset': (lambda x: re.match(r'\d+', x), lambda x: int(x), None),
-        'count': (lambda x: re.match(r'\d+', x), lambda x: int(x), None)
-    }
-
+def validate_search_params(raw_params, config):
     errors = {}
     params = {}
 
-    for name, (validator, transformer, validation_error_message) in params_validators_transformers.items():
-        raw_value = raw_params[name]
-        try:
-            if validator:
-                validator(raw_value)
-        except Exception as e:
-            errors[name] = str(e)
+    for name, (default_value, validator, transformer, validation_error_message) in config.items():
+        raw_value = raw_params.get(name, default_value)
+        if validator and not validator(raw_value):
+            errors[name] = validation_error_message
         else:
             try:
                 value = transformer(raw_value) if transformer else raw_value
@@ -109,21 +98,20 @@ def validate_search_params(raw_params):
 @app.route('/task_info')
 @cross_origin()
 def task_info():
-    args = request.args
-    search_params = {
-        'sort': args.get('sort', 'date').lower(),
-        'q': args.get('q', ''),
-        'state': args.get('state', 'all').lower(),
-        'offset': args.get('offset', '0'),
-        'count': args.get('count', '50')
+    config = {
+        'sort': ('date', None, None, None),
+        'q': ('', None, None, None),
+        'state': ('all', lambda x: x.upper() in list(vars(TaskState)) + ['ALL'], lambda x: x.upper(), 'No such state'),
+        'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
+        'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
 
     try:
-        params = validate_search_params(search_params)
+        params = validate_search_params(request.args, config)
     except SearchRequestError as e:
         return json_response({'errors': e.errors})
     else:
-        total, items = TaskController.get_tasks(**params)
+        total, items = task_controller.get_tasks(**params)
         return json_response({'tasks': {'count': total, 'items': items}})
 
 
@@ -147,7 +135,19 @@ def add_resource():
 @app.route('/resource_info')
 @cross_origin()
 def resource_info():
-    pass
+    config = {
+        'q': ('', None, None, None),
+        'is_locked': (None, lambda x: x in (True, False, None), None, 'No such state'),
+        'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
+        'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
+    }
+    try:
+        params = validate_search_params(request.args, config)
+    except SearchRequestError as e:
+        return json_response({'errors': e.errors})
+    else:
+        total, items = resource_controller.get_resources(**params)
+        return json_response({'resources': {'count': total, 'items': items}})
 
 
 @app.route('/delete_resource/<resource_id>')
