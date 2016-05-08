@@ -6,6 +6,7 @@ from types import FunctionType
 
 import mongoengine as me
 import numpy as np
+from celery import group
 from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import ParameterGrid
@@ -37,7 +38,6 @@ task_params = {
 
 class GSSubtask(me.Document):
     subtask_id = me.StringField(primary_key=True)
-    celery_task_id = me.StringField()
     parent_task_id = me.StringField()
     start_time = me.DateTimeField()
     end_time = me.DateTimeField()
@@ -259,9 +259,4 @@ class GSTask(me.Document):
 
     def delay(self):
         self.state = TaskState.PENDING
-        self.save()
-
-        for subtask in self.get_subtasks():
-            result = run_subtask.delay(subtask.subtask_id)
-            subtask.celery_task_id = result.id
-            subtask.save()
+        group(run_subtask.s(subtask.subtask_id) for subtask in self.get_subtasks()).apply_async()
