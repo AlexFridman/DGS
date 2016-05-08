@@ -41,6 +41,12 @@
                     </dd>
                 </dl>
             </div>
+            <div class="col-md-1">
+                <dl>
+                    <button class="btn btn-link" ng-click="delete(item.resource_id)" ng-hide="!canDelete(item)">Delete
+                    </button>
+                </dl>
+            </div>
         </div>
     </div>
 </div>

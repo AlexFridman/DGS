@@ -128,6 +128,17 @@ taskApp.controller("resourceController", function ($scope, $http, $interval, $lo
         count: 5
     };
 
+    $scope.delete = function (resourceId) {
+        $http({
+            method: 'GET',
+            url: 'http://localhost:5000/delete_resource/' + resourceId
+        }).then(function successCallback(response) {
+            alert('Resource deleted!');
+        }, function errorCallback(response) {
+            alert('Error');
+        });
+    };
+
 
     $scope.formParams = angular.copy($scope.defaultParams);
 
@@ -138,6 +149,10 @@ taskApp.controller("resourceController", function ($scope, $http, $interval, $lo
         $scope.params = angular.copy($scope.formParams);
 
         $scope.update()
+    };
+
+    $scope.canDelete = function (resource) {
+        return !resource.is_locked;
     };
 
 
