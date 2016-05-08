@@ -49,6 +49,15 @@ class ResourceController(Thread):
             else:
                 raise ResourceUnavailableError()
 
+    @staticmethod
+    def get_resources(q='', is_locked=None, offset=0, count=50):
+        resources = GSResource.objects(title__icontains=q)
+        if is_locked is not None:
+            resources = resources.filter(is_locked=is_locked)
+        total = resources.clone().count()
+        resources = resources.skip(offset).limit(count)
+        return total, [resource.to_json() for resource in resources]
+
     def run(self):
         self._running = True
         while self._running:
