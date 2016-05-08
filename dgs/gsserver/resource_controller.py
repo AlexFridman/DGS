@@ -28,11 +28,12 @@ class ResourceController(Thread):
     def add_resource(resource):
         resource.save()
 
-    @staticmethod
-    def schedule_resource_deletion(resource_id):
+    def schedule_resource_deletion(self, resource_id):
         resource = GSResource.objects.get(resource_id=resource_id)
         if resource:
             resource.is_deletion_requested = True
+            resource.save()
+            self._raise_resource_delete_event()
         else:
             raise ResourceNotFoundError(resource_id)
 
@@ -66,7 +67,7 @@ class ResourceController(Thread):
             with self._resource_locking_lock:
                 resource_to_delete_count = GSResource.objects(is_deletion_requested=True).count()
                 if resource_to_delete_count:
-                    for resource in GSResource.objects(is_deletion_requested=True, is_locked=False):
+                    for resource in GSResource.objects(is_deletion_requested=True, lockers__0__exists=False):
                         resource.delete()
                     time.sleep(self.tick_interval)
             if not resource_to_delete_count:
