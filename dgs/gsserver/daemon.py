@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 from flask import Flask
 from flask import request
 from flask.ext.cors import cross_origin
+
 from flask.ext.responses import json_response
 
 from dgs.gsserver.celeryapp import init_celery_app
@@ -127,7 +128,7 @@ def add_resource():
     try:
         resource_controller.add_resource(resource)
     except Exception as e:
-        return json_response({'message': str(e)})
+        return json_response({'message': str(e)}, status_code=400)
     else:
         return json_response({'message': 'ok'})
 
