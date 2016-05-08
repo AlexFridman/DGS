@@ -169,14 +169,37 @@ taskApp.controller("createFormController", function ($scope, $uibModal, $log) {
 
     $scope.items = ['item1', 'item2', 'item3'];
 
-    $scope.open = function (size) {
+    $scope.openAddTaskForm = function (size) {
 
-        $log.info('open');
+        $log.info('open task form');
 
         var modalInstance = $uibModal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: 'myModalContent.html',
-            controller: 'modalController',
+            templateUrl: 'addTaskForm.html',
+            controller: 'addTaskController',
+            size: size,
+            resolve: {
+                items: function () {
+                    return $scope.items;
+                }
+            }
+        });
+
+        modalInstance.result.then(function (selectedItem) {
+            $scope.selected = selectedItem;
+        }, function () {
+            $log.info('Modal dismissed at: ' + new Date());
+        });
+    };
+
+    $scope.openAddRecourceForm = function (size) {
+
+        $log.info('open recourse form');
+
+        var modalInstance = $uibModal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'addResourceForm.html',
+            controller: 'addResourceController',
             size: size,
             resolve: {
                 items: function () {
@@ -198,7 +221,7 @@ taskApp.controller("createFormController", function ($scope, $uibModal, $log) {
 
 });
 
-taskApp.controller('modalController', function ($scope, $uibModalInstance, $http, $log) {
+taskApp.controller('addTaskController', function ($scope, $uibModalInstance, $http, $log) {
 
     $scope.formParams = {
         title: 'Custom task',
@@ -263,8 +286,12 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
                 alert('Task added!');
             }, function errorCallback(response) {
                 var message = 'Adding task failed';
-                for (var e in response.data.message) {
-                    message += '\n' + e + ': ' + response.data.message[e].ex_message;
+                if (typeof(response.data.message) === 'string') {
+                    message += '\n' + response.data.message;
+                } else {
+                    for (var e in response.data.message) {
+                        message += '\n' + e + ': ' + response.data.message[e].ex_message;
+                    }
                 }
                 alert(message);
             });
@@ -276,6 +303,60 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
         $log.info('Sending data...');
         $scope.doAddTask();
 
+        $uibModalInstance.dismiss('ok');
+    }
+});
+
+taskApp.controller('addResourceController', function ($scope, $uibModalInstance, $http, $log) {
+
+    $scope.formParams = {
+        title: 'Custom resource',
+        file: undefined
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.onFileSelect = function ($files) {
+        $scope.formParams.file = $files[0];
+    };
+
+    $scope.doAddResource = function () {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $http({
+                method: 'POST',
+                url: 'http://localhost:5000/add_resource',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                data: {
+                    file: new Uint8Array(reader.result),
+                    title: $scope.formParams.title
+                }
+            }).then(function successCallback(response) {
+                alert('Resource added!');
+            }, function errorCallback(response) {
+                var message = 'Adding resource failed';
+                if (typeof(response.data.message) === 'string') {
+                    message += '\n' + response.data.message;
+                } else {
+                    for (var e in response.data.message) {
+                        message += '\n' + e + ': ' + response.data.message[e].ex_message;
+                    }
+                }
+                alert(message);
+            });
+        };
+        // TODO: fix sending file as byte[]
+        reader.readAsBinaryString($scope.formParams.file);
+    };
+
+    $scope.addResource = function () {
+        $log.info('Sending data...');
+        $scope.doAddResource();
 
         $uibModalInstance.dismiss('ok');
     }
