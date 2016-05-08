@@ -39,7 +39,7 @@ class TaskController(Thread):
     @staticmethod
     def get_tasks(sort='date', state=None, q='', offset=0, count=50):
         tasks = GSTask.objects(title__icontains=q).order_by('-start_time')
-        if state and state != 'all':
+        if state and state != 'ALL':
             tasks = tasks.filter(state__iexact=state)
         total = tasks.clone().count()
         if sort != 'date':

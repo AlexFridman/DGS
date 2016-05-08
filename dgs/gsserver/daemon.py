@@ -101,7 +101,7 @@ def task_info():
     config = {
         'sort': ('date', None, None, None),
         'q': ('', None, None, None),
-        'state': ('all', lambda x: x.upper() in list(vars(TaskState)) + ['ALL'], lambda x: x.upper(), 'No such state'),
+        'state': ('ALL', lambda x: x.upper() in list(vars(TaskState)) + ['ALL'], lambda x: x.upper(), 'No such state'),
         'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
         'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
