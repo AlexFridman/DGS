@@ -122,7 +122,7 @@ taskApp.controller("resourceController", function ($scope, $http, $interval, $lo
     $scope.isCollapsed = {};
 
     $scope.defaultParams = {
-        is_locked: 'All',
+        is_locked: 'all',
         q: undefined,
         offset: 0,
         count: 5
