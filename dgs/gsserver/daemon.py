@@ -120,10 +120,10 @@ def task_info():
 def add_resource():
     args = request.json
 
-    content = args.get('file')
-    if not content:
+    if 'file' not in args or not isinstance(args['file'], str) or not args['file']:
         return json_response({'message': 'can not add an empty resource'}, status_code=400)
-    resource = GSResource.create(content, args.get('title'))
+
+    resource = GSResource.create(args['file'].encode('utf8'), args.get('title'))
     try:
         resource_controller.add_resource(resource)
     except Exception as e:
