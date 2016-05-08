@@ -168,6 +168,7 @@ def run_master():
     init_celery_app(conf.Celery.conf)
     init_mongodb(conf.Mongo.connection)
     task_controller.start()
+    resource_controller.start()
 
     try:
         app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
