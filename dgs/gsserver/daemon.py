@@ -61,7 +61,6 @@ def add_task():
         resource_controller.lock_resources(temp_locker, resource_ids)
         are_resources_locked = True
         task = GSTask.create_from_script(script, resources, title)
-        resource_controller.lock_resources(task.task_id, resource_ids)
     except JSONDecodeError as e:
         return json_response({'message': 'Data is not in json format'}, status_code=400)
     except ScriptParseError as e:
@@ -170,6 +169,7 @@ def run_master():
     init_celery_app(conf.Celery.conf)
     init_mongodb(conf.Mongo.connection)
     task_controller.start()
+    resource_controller.start()
 
     try:
         app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
