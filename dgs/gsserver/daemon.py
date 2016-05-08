@@ -6,7 +6,6 @@ from json.decoder import JSONDecodeError
 from flask import Flask
 from flask import request
 from flask.ext.cors import cross_origin
-
 from flask.ext.responses import json_response
 
 from dgs.gsserver.celeryapp import init_celery_app
@@ -59,8 +58,7 @@ def add_task():
         script = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
-        task = GSTask.create_from_script(script, resources, title)
-        resource_controller.lock_resources(task.task_id, resource_ids)
+        task = GSTask.create_from_script(script, resources, title=title, task_id=temp_locker)
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
