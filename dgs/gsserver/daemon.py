@@ -49,7 +49,6 @@ def cancel_all():
 def add_task():
     temp_locker = uuid.uuid4()
     resource_ids = None
-    are_resources_locked = False
     try:
         args = request.json
 
@@ -59,19 +58,19 @@ def add_task():
         script = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
-        are_resources_locked = True
         task = GSTask.create_from_script(script, resources, title)
-    except JSONDecodeError as e:
-        return json_response({'message': 'Data is not in json format'}, status_code=400)
+        resource_controller.lock_resources(task.task_id, resource_ids)
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
         return json_response({'message': 'Some resources are unavailable'}, status_code=400)
+    except JSONDecodeError as e:
+        return json_response({'message': 'Data is not in json format'}, status_code=400)
     else:
         task_controller.add_task(task)
         return json_response({'message': 'ok'})
     finally:
-        if resource_ids and are_resources_locked:
+        if resource_ids:
             GSResource.unlock_resources(temp_locker, resource_ids)
 
 
@@ -116,7 +115,7 @@ def task_info():
         return json_response({'tasks': {'count': total, 'items': items}})
 
 
-@app.route('/add_resource')
+@app.route('/add_resource', methods=['POST'])
 @cross_origin()
 def add_resource():
     args = request.json
@@ -169,7 +168,6 @@ def run_master():
     init_celery_app(conf.Celery.conf)
     init_mongodb(conf.Mongo.connection)
     task_controller.start()
-    resource_controller.start()
 
     try:
         app.run(host=conf.Master.host, port=conf.Master.port, use_reloader=False, threaded=True)
