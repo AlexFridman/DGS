@@ -137,7 +137,9 @@ def add_resource():
 def resource_info():
     config = {
         'q': ('', None, None, None),
-        'is_locked': (None, lambda x: x in ('true', 'false', 'all'), lambda x: {'true': True, 'false': False}.get(x),
+        'is_locked': ('',
+                      lambda x: x.lower() in ('true', 'false', 'all', ''),
+                      lambda x: {'true': True, 'false': False}.get(x.lower()),
                       'No such state'),
         'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
         'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
