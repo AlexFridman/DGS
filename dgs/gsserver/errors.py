@@ -20,3 +20,8 @@ class SearchRequestError(Exception):
 class TaskStateError(Exception):
     def __init__(self, message):
         self.message = message
+
+
+class TaskNotFoundError(Exception):
+    def __init__(self, task_id):
+        self.task_id = task_id

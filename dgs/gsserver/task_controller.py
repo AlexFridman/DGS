@@ -3,17 +3,13 @@ import time
 from threading import Thread, Condition
 
 import mongoengine as me
-
 from celery.task.control import discard_all
+
 from dgs.gsserver.conf import conf
 from dgs.gsserver.db.gstask import GSTask, TaskState
+from dgs.gsserver.errors import TaskNotFoundError
 
 logging.basicConfig(level=logging.DEBUG)
-
-
-class TaskNotFoundError(Exception):
-    def __init__(self, task_id):
-        self.task_id = task_id
 
 
 class TaskController(Thread):
