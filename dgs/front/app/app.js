@@ -224,7 +224,7 @@ taskApp.controller("createFormController", function ($scope, $uibModal, $log) {
 taskApp.controller('addTaskController', function ($scope, $uibModalInstance, $http, $log) {
 
     $scope.formParams = {
-        title: 'Custom task',
+        title: '',
         file: undefined,
         resources: []
     };
@@ -310,7 +310,7 @@ taskApp.controller('addTaskController', function ($scope, $uibModalInstance, $ht
 taskApp.controller('addResourceController', function ($scope, $uibModalInstance, $http, $log) {
 
     $scope.formParams = {
-        title: 'Custom resource',
+        title: '',
         file: undefined
     };
 
