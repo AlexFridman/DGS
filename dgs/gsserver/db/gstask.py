@@ -213,14 +213,15 @@ class GSTask(me.Document):
     def update_state(self):
         subtasks = self.get_subtasks()
         subtask_states = [subtask.state for subtask in subtasks if subtask.state is not None]
+        unique_subtask_states = set(subtask_states)
         if self.state != TaskState.CANCELED:
-            if TaskState.FAILED in subtask_states:
+            if TaskState.FAILED in unique_subtask_states:
                 self.state = TaskState.FAILED
                 self.runtime_errors = self._get_unique_runtime_errors()
-            elif TaskState.RUNNING in subtask_states or all(
-                            state in subtask_states for state in (TaskState.IDLE, TaskState.SUCCESS)):
+            elif TaskState.RUNNING in unique_subtask_states or all(
+                            state in unique_subtask_states for state in (TaskState.IDLE, TaskState.SUCCESS)):
                 self.state = TaskState.RUNNING
-            elif all(state == TaskState.SUCCESS for state in subtask_states):
+            elif all(state == TaskState.SUCCESS for state in unique_subtask_states):
                 self.state = TaskState.SUCCESS
 
         if self.state in (TaskState.FAILED, TaskState.CANCELED, TaskState.SUCCESS):
@@ -232,8 +233,8 @@ class GSTask(me.Document):
         if start_times:
             self.start_time = min(start_times)
 
-        end_times = [subtask.end_time for subtask in subtasks if subtask.state == TaskState.SUCCESS \
-                     and subtask.end_time is not None]
+        end_times = [subtask.end_time for subtask in subtasks if
+                     subtask.state == TaskState.SUCCESS and subtask.end_time is not None]
         if end_times:
             self.end_time = max(end_times)
 
@@ -259,4 +260,5 @@ class GSTask(me.Document):
 
     def delay(self):
         self.state = TaskState.PENDING
-        group(run_subtask.s(subtask.subtask_id) for subtask in self.get_subtasks()).apply_async()
+        self.save()
+        group(run_subtask.s(subtask.subtask_id) for subtask in self.get_subtasks()).apply_async(compression='zlib')

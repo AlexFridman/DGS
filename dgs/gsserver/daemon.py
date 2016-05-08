@@ -58,7 +58,7 @@ def add_task():
         script = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
-        task = GSTask.create_from_script(script, resources, title=title, task_id=temp_locker)
+        task = GSTask.create_from_script(script, resources, title=title, task_id=str(temp_locker))
         is_successfully_created = True
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
