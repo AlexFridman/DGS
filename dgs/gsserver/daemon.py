@@ -59,6 +59,7 @@ def add_task():
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
         task = GSTask.create_from_script(script, resources, title=title, task_id=temp_locker)
+        is_successfully_created = True
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
     except ResourceUnavailableError as e:
@@ -69,7 +70,7 @@ def add_task():
         task_controller.add_task(task)
         return json_response({'message': 'ok'})
     finally:
-        if resource_ids:
+        if resource_ids and not is_successfully_created:
             GSResource.unlock_resources(temp_locker, resource_ids)
 
 
