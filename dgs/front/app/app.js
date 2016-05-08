@@ -333,7 +333,7 @@ taskApp.controller('addResourceController', function ($scope, $uibModalInstance,
                     'Access-Control-Allow-Origin': '*'
                 },
                 data: {
-                    file: new Uint8Array(reader.result),
+                    file: reader.result,
                     title: $scope.formParams.title
                 }
             }).then(function successCallback(response) {
@@ -350,8 +350,7 @@ taskApp.controller('addResourceController', function ($scope, $uibModalInstance,
                 alert(message);
             });
         };
-        // TODO: fix sending file as byte[]
-        reader.readAsBinaryString($scope.formParams.file);
+        reader.readAsText($scope.formParams.file, 'utf-8');
     };
 
     $scope.addResource = function () {
