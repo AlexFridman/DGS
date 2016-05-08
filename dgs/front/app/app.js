@@ -95,7 +95,7 @@ taskApp.controller('taskController', function ($scope, $http, $interval, $log) {
     };
 
     $scope.canCancel = function (state) {
-        return state == 'Idle' || state == 'Pending' || state == 'Running';
+        return state == 'IDLE' || state == 'PENDING' || state == 'RUNNING';
     };
 
 
