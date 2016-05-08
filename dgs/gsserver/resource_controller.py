@@ -53,7 +53,7 @@ class ResourceController(Thread):
     def get_resources(q='', is_locked=None, offset=0, count=50, include_content=True):
         resources = GSResource.objects(title__icontains=q)
         if is_locked is not None:
-            resources = resources.filter(is_locked=is_locked)
+            resources = resources.filter(lockers__0__exists=is_locked)
         if not include_content:
             resources = resources.exclude('content')
         total = resources.clone().count()
