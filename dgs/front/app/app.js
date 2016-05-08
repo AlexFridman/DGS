@@ -202,7 +202,8 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
 
     $scope.formParams = {
         title: 'Custom task',
-        file: undefined
+        file: undefined,
+        resources: []
     };
 
     $scope.cancel = function () {
@@ -213,7 +214,37 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
         $scope.formParams.file = $files[0];
     };
 
+    $scope.addNewChoice = function () {
+        $scope.formParams.resources.push({});
+    };
+
+    $scope.removeChoice = function (item) {
+        var index = $scope.formParams.resources.indexOf(item);
+        if (index > -1) {
+            $scope.formParams.resources.splice(index, 1);
+        }
+    };
+
+    $scope.makeDict = function (items) {
+        var result = {};
+        for (var index in items) {
+            var item = items[index];
+            result[item.alias] = item.id
+        }
+        return result;
+    };
+
+    $scope.fix_resorfses_aliases = function () {
+        for (var index in $scope.formParams.resources) {
+            var item = $scope.formParams.resources[index];
+            if (!item.alias) {
+                item.alias = item.id
+            }
+        }
+    };
+
     $scope.doAddTask = function () {
+        $scope.fix_resorfses_aliases();
         var reader = new FileReader();
         reader.onload = function (e) {
             $http({
@@ -225,7 +256,8 @@ taskApp.controller('modalController', function ($scope, $uibModalInstance, $http
                 },
                 data: {
                     file: reader.result,
-                    title: $scope.formParams.title
+                    title: $scope.formParams.title,
+                    resources: $scope.makeDict($scope.formParams.resources)
                 }
             }).then(function successCallback(response) {
                 alert('Task added!');
