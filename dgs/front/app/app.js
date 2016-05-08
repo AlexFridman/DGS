@@ -4,10 +4,10 @@ var taskApp = angular.module('taskApp', ['ui.bootstrap', 'ngRoute']);
 
 taskApp.config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/tasks', {
-        templateUrl: 'partial/tasks.html',
+        templateUrl: 'partial/tasks/tasks.html',
         controller: 'taskController'
     }).when('/resources', {
-        templateUrl: 'partial/resources.html',
+        templateUrl: 'partial/resources/resources.html',
         controller: 'resourceController'
     }).otherwise({
         redirectTo: '/tasks'
@@ -111,10 +111,18 @@ taskApp.controller("resourceController", function ($scope, $http, $interval, $lo
         items: []
     };
 
+    $scope.options = {
+        is_locked: [
+            'all',
+            true,
+            false,
+        ]
+    };
+
     $scope.isCollapsed = {};
 
     $scope.defaultParams = {
-        is_locked: undefined,
+        is_locked: 'All',
         q: undefined,
         offset: 0,
         count: 5
