@@ -137,7 +137,8 @@ def add_resource():
 def resource_info():
     config = {
         'q': ('', None, None, None),
-        'is_locked': (None, lambda x: x in (True, False, None), None, 'No such state'),
+        'is_locked': (None, lambda x: x in ('true', 'false', 'all'), lambda x: {'true': True, 'false': False}.get(x),
+                      'No such state'),
         'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
         'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
@@ -146,7 +147,7 @@ def resource_info():
     except SearchRequestError as e:
         return json_response({'errors': e.errors})
     else:
-        total, items = resource_controller.get_resources(**params)
+        total, items = resource_controller.get_resources(include_content=False, **params)
         return json_response({'resources': {'count': total, 'items': items}})
 
 
