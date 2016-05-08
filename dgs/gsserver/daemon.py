@@ -102,8 +102,8 @@ def task_info():
         'sort': ('date', None, None, None),
         'q': ('', None, None, None),
         'state': ('ALL', lambda x: x.upper() in list(vars(TaskState)) + ['ALL'], lambda x: x.upper(), 'No such state'),
-        'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
-        'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
+        'offset': ('0', lambda x: re.match(r'\d+', x), lambda x: int(x), None),
+        'count': ('50', lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
 
     try:
@@ -141,8 +141,8 @@ def resource_info():
                       lambda x: x.lower() in ('true', 'false', 'all', ''),
                       lambda x: {'true': True, 'false': False}.get(x.lower()),
                       'No such state'),
-        'offset': (0, lambda x: re.match(r'\d+', x), lambda x: int(x), None),
-        'count': (50, lambda x: re.match(r'\d+', x), lambda x: int(x), None)
+        'offset': ('0', lambda x: re.match(r'\d+', x), lambda x: int(x), None),
+        'count': ('50', lambda x: re.match(r'\d+', x), lambda x: int(x), None)
     }
     try:
         params = validate_search_params(request.args, config)
