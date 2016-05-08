@@ -84,7 +84,59 @@ taskApp.controller('taskController', function ($scope, $http, $interval, $log) {
 
 
 });
-taskApp.controller('createFormController', function ($scope, $uibModal, $log) {
+
+taskApp.controller("resourceController", function ($scope, $http, $interval, $log) {
+    $scope.resource_list = {
+        items: []
+    };
+
+    $scope.isCollapsed = {};
+
+    $scope.defaultParams = {
+        is_locked: undefined,
+        q: undefined,
+        offset: 0,
+        count: 5
+    };
+
+
+    $scope.formParams = angular.copy($scope.defaultParams);
+
+    $scope.params = angular.copy($scope.defaultParams);
+
+
+    $scope.search = function () {
+        $scope.params = angular.copy($scope.formParams);
+
+        $scope.update()
+    };
+
+
+    $scope.reset = function () {
+        $scope.formParams = angular.copy($scope.defaultParams)
+    };
+
+
+    $scope.update = function () {
+        $http({
+            method: 'GET',
+            url: 'http://localhost:5000/resource_info',
+            params: $scope.params
+        }).then(function successCallback(response) {
+            $scope.resource_list = response.data.resources
+        }, function errorCallback(response) {
+            $log.warn('error loading data')
+        });
+    };
+
+
+    $scope.update();
+
+    $interval($scope.update, 10000)
+});
+
+
+taskApp.controller("createFormController", function ($scope, $uibModal, $log) {
 
     $scope.items = ['item1', 'item2', 'item3'];
 

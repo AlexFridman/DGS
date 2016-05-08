@@ -1,0 +1,46 @@
+<div class="list-group" id="table-margin-top">
+    <div ng-repeat="item in resource_list.items" class="list-group-item">
+        <div class="row">
+            <div class="col-md-3">
+                <dl>
+                    <dt>
+                        ID
+                    </dt>
+                    <dd>
+                        {{item.resource_id}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-3">
+                <dl>
+                    <dt>
+                        Title
+                    </dt>
+                    <dd>
+                        {{item.title}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-3">
+                <dl>
+                    <dt>
+                        Size
+                    </dt>
+                    <dd>
+                        {{item.size}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-3">
+                <dl>
+                    <dt>
+                        Is locked
+                    </dt>
+                    <dd>
+                        {{item.is_locked}}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
