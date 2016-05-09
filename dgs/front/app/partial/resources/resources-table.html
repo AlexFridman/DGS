@@ -48,5 +48,23 @@
                 </dl>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-2">
+                <p>
+
+                <div class="btn btn-link" ng-click="isCollapsed[item.resource_id] = !isCollapsed[item.resource_id]">View
+                    details
+                </div>
+            </div>
+        </div>
+        <div uib-collapse="!isCollapsed[item.resouce_id]">
+            <div class="well well-lg">
+                <p><b>Lockers:</b></p>
+                <p>
+                <ul ng-repeat="locker_id in item.lockers">
+                    <li>{{locker_id}}</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
