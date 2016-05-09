@@ -57,9 +57,13 @@
                 </div>
             </div>
         </div>
-        <div uib-collapse="!isCollapsed[item.resouce_id]">
-            <div class="well well-lg">
+        <div uib-collapse="!isCollapsed[item.resource_id]">
+            <div class="well well-lg" ng-hide="!item.lockers">
+                <p><b>No lockers</b></p>
+            </div>
+            <div class="well well-lg" ng-hide="item.lockers">
                 <p><b>Lockers:</b></p>
+
                 <p>
                 <ul ng-repeat="locker_id in item.lockers">
                     <li>{{locker_id}}</li>
