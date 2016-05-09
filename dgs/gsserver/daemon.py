@@ -47,8 +47,9 @@ def cancel_all():
 @app.route('/add_task', methods=['POST'])
 @cross_origin()
 def add_task():
-    temp_locker = uuid.uuid4()
+    temp_locker = str(uuid.uuid4())
     resource_ids = None
+    is_successfully_created = False
     try:
         args = request.json
 
@@ -58,7 +59,7 @@ def add_task():
         script = args.get('file', '')
         # TODO: probably, should be moved elsewhere
         resource_controller.lock_resources(temp_locker, resource_ids)
-        task = GSTask.create_from_script(script, resources, title=title, task_id=str(temp_locker))
+        task = GSTask.create_from_script(script, resources, title=title, task_id=temp_locker)
         is_successfully_created = True
     except ScriptParseError as e:
         return json_response({'message': e.script_errors}, status_code=400)
