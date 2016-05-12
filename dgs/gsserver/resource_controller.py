@@ -41,14 +41,13 @@ class ResourceController(Thread):
         if not resource_ids:
             return
         with self._resource_locking_lock:
-            if GSResource.is_resources_available(resource_ids):
-                for resource_id in resource_ids:
-                    resource = GSResource.get_by_id(resource_id)
-                    if locker_id not in resource.lockers:
-                        resource.lockers.append(locker_id)
-                        resource.save()
-            else:
-                raise ResourceUnavailableError()
+            for resource_id in resource_ids:
+                resource = GSResource.get_by_id(resource_id, include_content=False)
+                if resource is None or resource.is_deletion_requested:
+                    raise ResourceUnavailableError()
+                if locker_id not in resource.lockers:
+                    resource.lockers.append(locker_id)
+                    resource.save()
 
     @staticmethod
     def get_resources(q='', is_locked=None, offset=0, count=50, include_content=True):

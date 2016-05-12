@@ -20,11 +20,11 @@ class GSResource(me.Document):
         return cls(resource_id=resource_id, title=title, content=content, size=len(content))
 
     @classmethod
-    def get_by_id(cls, resource_id):
-        try:
-            return GSResource.objects.get(resource_id=resource_id)
-        except me.DoesNotExist:
-            pass
+    def get_by_id(cls, resource_id, include_content=True):
+        if include_content:
+            return GSResource.objects.filter(resource_id=resource_id).first()
+        else:
+            return GSResource.objects.filter(resource_id=resource_id).exclude('content').first()
 
     @classmethod
     def is_resources_available(cls, resource_ids):

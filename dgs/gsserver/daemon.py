@@ -67,6 +67,8 @@ def add_task():
         return json_response({'message': 'Some resources are unavailable'}, status_code=400)
     except JSONDecodeError as e:
         return json_response({'message': 'Data is not in json format'}, status_code=400)
+    except Exception as e:
+        return json_response({'message': str(e)}, status_code=500)
     else:
         task_controller.add_task(task)
         return json_response({'message': 'ok'})

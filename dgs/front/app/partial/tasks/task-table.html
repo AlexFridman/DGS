@@ -11,7 +11,17 @@
                     <span ng-switch-when="FAILED" class="label label-danger">FAILED</span>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
+                <dl>
+                    <dt>
+                        Title
+                    </dt>
+                    <dd>
+                        {{item.title}}
+                    </dd>
+                </dl>
+            </div>
+            <div class="col-md-3">
                 <dl>
                     <dt>
                         Start time
@@ -21,7 +31,7 @@
                     </dd>
                 </dl>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <dl>
                     <dt>
                         End time
